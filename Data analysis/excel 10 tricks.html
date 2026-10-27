@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10 Mind-Blowing Excel Tricks — Live Workbook Generator</title>
+<style>
+  :root{
+    --ink:#1d2b36; --muted:#5d7183; --line:#dbe5ec;
+    --teal:#1f7a8c; --navy:#17405c;
+    --rose:#c1553c; --amber:#c9860b; --green:#2a9d8f; --purple:#5b4b8a;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:"Segoe UI", Calibri, system-ui, -apple-system, sans-serif;
+    font-size:11pt; color:var(--ink); background:#f4f7f9; line-height:1.55;
+  }
+  header{
+    background:linear-gradient(135deg,#17405c 0%,#1f7a8c 55%,#2f9fb3 100%);
+    color:#fff; padding:46px 24px 40px; text-align:center;
+  }
+  header h1{margin:0 0 10px; font-size:30px; letter-spacing:-.4px}
+  header p{margin:0 auto; max-width:760px; opacity:.94; font-size:11.5pt}
+  .badges{margin-top:18px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap}
+  .badge{
+    background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.32);
+    padding:5px 14px; border-radius:999px; font-size:9.5pt; letter-spacing:.3px;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 20px 70px}
+  .download-panel{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:26px; margin-top:-34px; box-shadow:0 12px 34px rgba(23,64,92,.10);
+    display:flex; gap:22px; align-items:center; flex-wrap:wrap; justify-content:space-between;
+  }
+  .download-panel h2{margin:0 0 4px; font-size:15pt; color:var(--navy)}
+  .download-panel p{margin:0; color:var(--muted); font-size:10.5pt}
+  button#downloadBtn{
+    background:linear-gradient(135deg,#2a9d8f,#1f7a8c); color:#fff; border:0;
+    padding:15px 32px; border-radius:12px; font-size:12pt; font-weight:600;
+    cursor:pointer; letter-spacing:.2px; transition:.18s; white-space:nowrap;
+    box-shadow:0 6px 18px rgba(31,122,140,.30);
+  }
+  button#downloadBtn:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(31,122,140,.38)}
+  button#downloadBtn:disabled{opacity:.6; cursor:wait; transform:none}
+  #status{margin-top:14px; font-size:10.5pt; min-height:20px; font-weight:600}
+  .ok{color:#1c7a5e} .err{color:#c0392b}
+
+  h3.section{
+    margin:44px 0 16px; font-size:13pt; color:var(--navy);
+    border-left:5px solid #2f9fb3; padding-left:12px;
+  }
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:18px}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    overflow:hidden; display:flex; flex-direction:column;
+    box-shadow:0 3px 12px rgba(23,64,92,.05); transition:.18s;
+  }
+  .card:hover{transform:translateY(-3px); box-shadow:0 10px 26px rgba(23,64,92,.12)}
+  .card-head{padding:14px 16px; color:#fff; display:flex; align-items:center; gap:11px}
+  .num{
+    width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.22);
+    display:grid;place-items:center;font-weight:700;font-size:11pt;flex:none;
+  }
+  .card-head h4{margin:0; font-size:11pt; font-weight:600}
+  .card-body{padding:14px 16px 16px; flex:1; display:flex; flex-direction:column; gap:10px}
+  .card-body p{margin:0; font-size:10.5pt; color:var(--muted)}
+  .chip{
+    background:#f1f6f9; border:1px solid #dde8ef; border-radius:8px;
+    padding:8px 11px; font-family:Consolas,"Courier New",monospace;
+    font-size:9.8pt; color:#17405c; word-break:break-word;
+  }
+  .need{font-size:9.5pt; color:#8a9aa8; letter-spacing:.2px}
+  .mini{width:100%; border-collapse:collapse; font-size:9.5pt; margin-top:2px}
+  .mini th{background:#eef4f8; color:#17405c; text-align:left; padding:5px 7px; font-weight:600; border:1px solid var(--line)}
+  .mini td{padding:4px 7px; border:1px solid var(--line); color:#3c4c59}
+  .mini td.num-cell{text-align:right; font-variant-numeric:tabular-nums}
+  footer{text-align:center; color:var(--muted); font-size:10pt; padding:10px 20px 40px}
+  code.inline{background:#eef4f8; padding:1px 6px; border-radius:5px; font-size:9.8pt; color:#17405c}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>10 Mind-Blowing Excel Tricks</h1>
+  <p>A single, self-contained HTML file that builds a real <strong>.xlsx</strong> workbook — one tab per trick, each with live formulas, real data and a full step-by-step explanation, plus a dedicated Formula &amp; Features Guide tab.</p>
+  <div class="badges">
+    <span class="badge">11 sheets + guide</span>
+    <span class="badge">Live formulas</span>
+    <span class="badge">Colour-coded</span>
+    <span class="badge">Calibri 11</span>
+    <span class="badge">Recalculates on open</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="download-panel">
+    <div>
+      <h2>Build your workbook</h2>
+      <p>Click the button — the file is generated in your browser. Nothing is uploaded.</p>
+      <div id="status"></div>
+    </div>
+    <button id="downloadBtn">⬇ Download Excel Workbook (.xlsx)</button>
+  </div>
+
+  <h3 class="section">What's inside the workbook</h3>
+  <div class="grid" id="cards"></div>
+
+  <h3 class="section">How the live formulas are wired</h3>
+  <div class="card" style="padding:18px 20px">
+    <p style="margin:0 0 10px; color:var(--muted); font-size:10.5pt">
+      Every calculation inside the generated file is a <strong>real Excel formula</strong> (not a pasted value), so you can click any cell and see the logic. The workbook is written with <code class="inline">fullCalcOnLoad</code> enabled, which means Excel recalculates everything the moment you open it.
+    </p>
+    <table class="mini">
+      <tr><th>Tab</th><th>Live formula used</th><th>What it proves</th></tr>
+      <tr><td>04. Two-Way XLOOKUP</td><td><code class="inline">=XLOOKUP(..) XLOOKUP(..)</code></td><td>Space operator = intersection</td></tr>
+      <tr><td>05. Custom Sort</td><td><code class="inline">=SORTBY(data, XMATCH(col, order, 0))</code></td><td>Sort by your own list</td></tr>
+      <tr><td>06. In-Cell Bars</td><td><code class="inline">=REPT("|", value/1500)</code></td><td>Bar chart inside a cell</td></tr>
+      <tr><td>08. Percent Fix</td><td><code class="inline">=raw/100</code> + <code class="inline">0.0%</code></td><td>Correct % display</td></tr>
+      <tr><td>09. Hide Values</td><td>number format <code class="inline">;;;</code></td><td>Hidden but still computed</td></tr>
+      <tr><td>10. Regex Extract</td><td><code class="inline">=REGEXREPLACE(txt,"[^0-9]","")</code></td><td>Strip non-digits</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<footer>Built with ExcelJS · Calibri 11pt body · Works best in Microsoft 365</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script>
+/* ============================================================
+   1. PALETTE + HELPERS
+   ============================================================ */
+const ARGB = {
+  navy:'FF17405C', navySoft:'FF2C5F80',
+  teal:'FF1F7A8C', tealSoft:'FF4FA3B0',
+  green:'FF2A9D8F', greenSoft:'FF57B8AC',
+  amber:'FFC9860B', amberSoft:'FFE0A33A',
+  rose:'FFC1553C', roseSoft:'FFD97B60',
+  purple:'FF5B4B8A', purpleSoft:'FF8574B5',
+  ink:'FF1F2A35', grey:'FF5A6B7B',
+  pale:'FFF1F6F9', line:'FFD9E4EC',
+  white:'FFFFFFFF', mint:'FFEDF7F3', cream:'FFFFF9EC',
+  yellow:'FFFFF3C4', pink:'FFFDEDE9'
+};
+
+function fill(ws, r1, c1, r2, c2, argb){
+  for(let r=r1;r<=r2;r++){
+    for(let c=c1;c<=c2;c++){
+      ws.getCell(r,c).fill = {type:'pattern', pattern:'solid', fgColor:{argb}};
+    }
+  }
+}
+function box(cell, argb){
+  const s = {style:'thin', color:{argb: argb || ARGB.line}};
+  cell.border = {top:s, left:s, bottom:s, right:s};
+}
+function bar(ws, row, lastCol, text, argb){
+  ws.mergeCells(row,1,row,lastCol);
+  const c = ws.getCell(row,1);
+  c.value = text;
+  c.font = {name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'}};
+  c.alignment = {vertical:'middle', horizontal:'left', indent:1};
+  fill(ws, row,1,row,lastCol, argb);
+  ws.getRow(row).height = 23;
+}
+function line(ws, row, lastCol, text, opts){
+  opts = opts || {};
+  ws.mergeCells(row,1,row,lastCol);
+  const c = ws.getCell(row,1);
+  c.value = text;
+  c.font = {name: opts.fontName || 'Calibri', size: opts.fontSize || 11,
+            italic:!!opts.italic, bold:!!opts.bold,
+            color:{argb: opts.color || 'FF1F2A35'}};
+  c.alignment = {vertical:'middle', horizontal:'left', wrapText:true, indent:1};
+  if(opts.fill) fill(ws,row,1,row,lastCol,opts.fill);
+  ws.getRow(row).height = opts.height || 22;
+}
+
+/* FORMULA-SAFE put: strips leading '=' before handing to ExcelJS */
+function put(ws, r, c, val, opts){
+  opts = opts || {};
+  const cell = ws.getCell(r,c);
+  if(val && typeof val === 'object' && val.formula !== undefined){
+    const fv = { formula: String(val.formula).replace(/^=/,'') };
+    if(val.result !== undefined) fv.result = val.result;
+    cell.value = fv;
+  } else {
+    cell.value = val;
+  }
+  cell.font = {
+    name: opts.fontName || 'Calibri',
+    size: opts.fontSize || 11,
+    bold: !!opts.bold,
+    italic: !!opts.italic,
+    color:{argb: opts.color || 'FF1F2A35'}
+  };
+  cell.alignment = {
+    vertical:'middle',
+    horizontal: opts.align || 'left',
+    wrapText: !!opts.wrap
+  };
+  if(opts.numFmt) cell.numFmt = opts.numFmt;
+  if(opts.fill) fill(ws, r,c,r,c, opts.fill);
+  if(opts.border) box(cell);
+  return cell;
+}
+function addFrame(ws, o){
+  const LC = o.lastCol || 8;
+  ws.mergeCells(1,1,1,LC);
+  let c = ws.getCell(1,1);
+  c.value = o.title;
+  c.font = {name:'Calibri', size:17, bold:true, color:{argb:'FFFFFFFF'}};
+  c.alignment = {vertical:'middle', horizontal:'left', indent:1};
+  fill(ws,1,1,1,LC,o.accent);
+  ws.getRow(1).height = 42;
+
+  ws.mergeCells(2,1,2,LC);
+  c = ws.getCell(2,1);
+  c.value = o.subtitle;
+  c.font = {name:'Calibri', size:11, color:{argb:'FFFFFFFF'}};
+  c.alignment = {vertical:'middle', horizontal:'left', indent:1, wrapText:true};
+  fill(ws,2,1,2,LC,o.accentSoft);
+  ws.getRow(2).height = 24;
+  ws.getRow(3).height = 8;
+
+  bar(ws, 4, LC, 'WHAT THIS TRICK DOES', o.accent);
+  ws.mergeCells(5,1,5,LC);
+  c = ws.getCell(5,1);
+  c.value = o.what;
+  c.font = {name:'Calibri', size:11, color:{argb:'FF1F2A35'}};
+  c.alignment = {vertical:'top', horizontal:'left', wrapText:true, indent:1};
+  fill(ws,5,1,5,LC,'FFF7FAFC');
+  ws.getRow(5).height = o.whatHeight || 50;
+  ws.getRow(6).height = 8;
+
+  bar(ws, 7, LC, 'STEP BY STEP', o.accent);
+  let r = 8;
+  o.steps.forEach(function(s,i){
+    ws.mergeCells(r,1,r,LC);
+    const cc = ws.getCell(r,1);
+    cc.value = (i+1) + '.\u2003' + s;
+    cc.font = {name:'Calibri', size:11, color:{argb:'FF1F2A35'}};
+    cc.alignment = {vertical:'middle', horizontal:'left', wrapText:true, indent:1};
+    fill(ws, r,1,r,LC, i%2 ? 'FFFFFFFF' : ARGB.pale);
+    ws.getRow(r).height = 22;
+    r++;
+  });
+  return r + 1;
+}
+function headRow(ws, row, col, headers, argb){
+  headers.forEach(function(h,i){
+    const c = ws.getCell(row, col+i);
+    c.value = h;
+    c.font = {name:'Calibri', size:11, bold:true, color:{argb:'FFFFFFFF'}};
+    c.alignment = {vertical:'middle', horizontal:'center', wrapText:true};
+    fill(ws, row, col+i, row, col+i, argb);
+    box(c);
+  });
+  ws.getRow(row).height = 26;
+}
+
+/* ============================================================
+   2. TOC DATA
+   ============================================================ */
+const TRICKS = [
+  {n:1,  tab:'01. Chart Templates', name:'Reusable Chart Templates',
+   desc:'Save a formatted chart as a template, set it as default, insert with Alt+F1.',
+   formula:'Alt + F1', needs:'Any Excel', color:ARGB.teal},
+  {n:2,  tab:'02. Python Dates', name:'Clean Dates with Python',
+   desc:'Use =PY( pd.to_datetime(...) ) to clean messy date strings inside Excel.',
+   formula:'=PY( pd.to_datetime(A2) )', needs:'Python in Excel (365)', color:ARGB.purple},
+  {n:3,  tab:'03. Picture In Cell', name:'Embed a Picture Inside a Cell',
+   desc:'Turn a cell note into a transparent, cell-bound image holder.',
+   formula:'Review ▸ Notes ▸ New Note', needs:'Any Excel', color:ARGB.amber},
+  {n:4,  tab:'04. Two-Way XLOOKUP', name:'Two-Way Lookup with Space Operator',
+   desc:'Join a vertical and a horizontal XLOOKUP with a space to get the intersection.',
+   formula:'=XLOOKUP(..) XLOOKUP(..)', needs:'Excel 365 / 2021', color:ARGB.green},
+  {n:5,  tab:'05. Custom Sort', name:'Custom Sort with SORTBY + XMATCH',
+   desc:'Sort by your own list order (India, UK, USA...) instead of A to Z.',
+   formula:'=SORTBY(data, XMATCH(col, order, 0))', needs:'Excel 365', color:ARGB.rose},
+  {n:6,  tab:'06. In-Cell Bars', name:'In-Cell Bar Charts with REPT',
+   desc:'Repeat a character to build a bar chart inside a single cell.',
+   formula:'=REPT("|", value/1500)', needs:'Any Excel', color:ARGB.teal},
+  {n:7,  tab:'07. Classic Pivot', name:'Classic Pivot Table Wizard',
+   desc:'Alt, D, P opens the legacy wizard with Multiple Consolidation Ranges.',
+   formula:'Alt → D → P', needs:'Any Excel', color:ARGB.navySoft},
+  {n:8,  tab:'08. Percent Fix', name:'Fix Percentages Stored as Numbers',
+   desc:'Divide by 100 with Paste Special, then apply the % format.',
+   formula:'Paste Special ▸ Divide', needs:'Any Excel', color:ARGB.amber},
+  {n:9,  tab:'09. Hide Values', name:'Hide Cell Values with ;;;',
+   desc:'The custom format ;;; hides the value but keeps it in formulas.',
+   formula:'Ctrl+1 ▸ Custom ▸ ;;;', needs:'Any Excel', color:ARGB.purple},
+  {n:10, tab:'10. Regex Extract', name:'Extract Numbers with REGEXREPLACE',
+   desc:'Strip every non-digit character out of a messy string in one step.',
+   formula:'=REGEXREPLACE(A2,"[^0-9]","")', needs:'Excel 365 (Insiders)', color:ARGB.green}
+];
+
+/* ============================================================
+   3. BUILD WORKBOOK
+   ============================================================ */
+async function buildWorkbook(){
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Excel Tricks Lab';
+  wb.lastModifiedBy = 'Excel Tricks Lab';
+  wb.created = new Date();
+  wb.modified = new Date();
+  try { wb.calcProperties.fullCalcOnLoad = true; } catch(e) {}
+
+  /* ---------- 00. READ ME ---------- */
+  const ws0 = wb.addWorksheet('00. Read Me',
+    {properties:{tabColor:{argb:ARGB.navy}}, views:[{showGridLines:false}]});
+  ws0.columns = [{width:6},{width:26},{width:34},{width:58},{width:40},{width:20}];
+
+  ws0.mergeCells(1,1,1,6);
+  let c = ws0.getCell(1,1);
+  c.value = '10 MIND-BLOWING EXCEL TRICKS';
+  c.font = {name:'Calibri', size:22, bold:true, color:{argb:'FFFFFFFF'}};
+  c.alignment = {vertical:'middle', horizontal:'left', indent:1};
+  fill(ws0,1,1,1,6,ARGB.navy);
+  ws0.getRow(1).height = 52;
+
+  ws0.mergeCells(2,1,2,6);
+  c = ws0.getCell(2,1);
+  c.value = 'Interactive Workbook   |   One tab per trick   |   Live formulas, real data, full explanations';
+  c.font = {name:'Calibri', size:11, color:{argb:'FFFFFFFF'}};
+  c.alignment = {vertical:'middle', horizontal:'left', indent:1};
+  fill(ws0,2,1,2,6,ARGB.navySoft);
+  ws0.getRow(2).height = 26;
+
+  ws0.getRow(3).height = 10;
+  bar(ws0, 4, 6, 'HOW TO USE THIS FILE', ARGB.navySoft);
+
+  const howto = [
+    'Every coloured tab is a complete, working demo. Click any shaded cell and look at the formula bar — nothing is hard-coded.',
+    'Yellow cells are inputs. Change them and the live formulas on that tab update instantly.',
+    'Formulas that need Microsoft 365 are marked in the "Needs" column on this page.',
+    'The workbook is saved with full-calculation-on-load, so Excel recalculates everything the moment you open it.',
+    'If a modern function shows #NAME?, your Excel version is older than the function — use the fallback column next to it.'
+  ];
+  let r = 5;
+  howto.forEach(function(t,i){
+    line(ws0, r, 6, '•\u2003' + t, {height:22, fill: i%2 ? 'FFFFFFFF' : ARGB.pale});
+    r++;
+  });
+
+  r += 1;
+  bar(ws0, r, 6, 'CONTENTS — ONE TAB PER TRICK', ARGB.navySoft);
+  r++;
+  const ch = r;
+  headRow(ws0, ch, 1, ['#','TAB NAME','TRICK','WHAT IT DOES','KEY FORMULA','NEEDS'], ARGB.teal);
+
+  TRICKS.forEach(function(t,i){
+    const row = ch + 1 + i;
+    put(ws0, row, 1, t.n, {align:'center', bold:true, color:'FFFFFFFF', fill:t.color});
+    put(ws0, row, 2, t.tab, {bold:true, color:'FF17405C', border:true});
+    put(ws0, row, 3, t.name, {border:true});
+    put(ws0, row, 4, t.desc, {border:true, wrap:true});
+    put(ws0, row, 5, t.formula, {border:true, fontName:'Consolas', fontSize:10, color:'FF1F7A8C'});
+    put(ws0, row, 6, t.needs, {border:true, fontSize:10, color:'FF5A6B7B'});
+    if(i%2===1){
+      fill(ws0,row,2,row,6,'FFF1F6F9');
+      fill(ws0,row,1,row,1,t.color);
+    }
+    ws0.getRow(row).height = 34;
+  });
+
+  r = ch + TRICKS.length + 2;
+  line(ws0, r, 6, '→ Complete formula reference and step-by-step usage: see the last tab, "11. Formula Guide".',
+       {fill:ARGB.mint, bold:true, color:'FF1F7A8C', height:24});
+  r += 2;
+
+  bar(ws0, r, 6, 'ABOUT THE MODERN FUNCTIONS IN THIS FILE', ARGB.rose); r++;
+  line(ws0, r, 6, 'XLOOKUP, XMATCH, SORTBY, TEXTJOIN, SEQUENCE and REGEXREPLACE are Microsoft 365 functions. In the underlying .xlsx they are stored with the _xlfn. prefix — that is normal and Excel displays them without the prefix.', {height:34, fill:ARGB.pink}); r++;
+  line(ws0, r, 6, 'Python-in-Excel (=PY) can only be typed inside Excel itself; it cannot be written into a file by a script. The Python tab therefore shows the exact Python syntax as text AND a working native Excel fallback formula you can use right now.', {height:34, fill:ARGB.pink}); r++;
+  line(ws0, r, 6, 'Colour key:  Teal = structure  ·  Green = live formula result  ·  Yellow = your input  ·  Pink = warning / note', {height:24, bold:true, color:'FF17405C'});
+
+  /* ---------- 01. CHART TEMPLATES ---------- */
+  const ws1 = wb.addWorksheet('01. Chart Templates',
+    {properties:{tabColor:{argb:ARGB.teal}}, views:[{showGridLines:false}]});
+  ws1.columns = [{width:16},{width:15},{width:15},{width:14},{width:15},{width:17},{width:20},{width:20}];
+
+  r = addFrame(ws1, {
+    title:'TRICK 1  ·  Reuse Chart Formatting with a Template',
+    subtitle:'Save any formatted chart as a template, set it as default, then insert it forever with Alt + F1',
+    what:'Formatting a chart by hand every single time is slow and inconsistent. Excel lets you save a fully formatted chart as a reusable template and even set it as your DEFAULT chart, so every new chart inherits your brand style the instant you press Alt + F1.',
+    whatHeight:48,
+    steps:[
+      'Format the first chart exactly how you want it — colours, fonts, labels, gridlines, legend position.',
+      'METHOD A (quick, not reusable): select the formatted chart ▸ Ctrl+C ▸ select the target chart ▸ Home ▸ Paste ▸ Paste Special ▸ Formats ▸ OK.',
+      'METHOD B (recommended): right-click the formatted chart ▸ Save as Template ▸ name it "Branded Chart" ▸ Save.',
+      'Insert the template: select your data ▸ Insert ▸ Recommended Charts ▸ All Charts ▸ Templates ▸ pick your template.',
+      'Make it the default: with the template selected, click "Set as Default Chart". Now Alt + F1 inserts that exact style instantly, forever.'
+    ],
+    accent: ARGB.teal, accentSoft: ARGB.tealSoft, lastCol: 8
+  });
+
+  bar(ws1, r, 8, 'LIVE EXAMPLE — MONTHLY PERFORMANCE (all numbers below are real formulas)', ARGB.teal); r++;
+  const h1 = r;
+  headRow(ws1, h1, 1, ['Month','Sales ($)','Profit ($)','Margin %','Target ($)','vs Target ($)'], ARGB.teal);
+
+  const months1 = ['Jan-2026','Feb-2026','Mar-2026','Apr-2026','May-2026','Jun-2026'];
+  const sales1  = [42000, 47500, 51200, 49800, 56300, 60100];
+  const profit1 = [12800, 14200, 16100, 15200, 18400, 20300];
+  const target1 = [40000, 45000, 50000, 52000, 55000, 58000];
+
+  for(let i=0;i<6;i++){
+    const row = h1 + 1 + i;
+    put(ws1,row,1, months1[i], {border:true, bold:true, color:'FF17405C'});
+    put(ws1,row,2, sales1[i], {border:true, align:'right', numFmt:'#,##0'});
+    put(ws1,row,3, profit1[i],{border:true, align:'right', numFmt:'#,##0'});
+    put(ws1,row,4, {formula:'=IFERROR(C'+row+'/B'+row+',0)'}, {border:true, align:'right', numFmt:'0.0%', color:'FF2A9D8F', bold:true});
+    put(ws1,row,5, target1[i],{border:true, align:'right', numFmt:'#,##0'});
+    put(ws1,row,6, {formula:'=B'+row+'-E'+row}, {border:true, align:'right', numFmt:'#,##0;[Red]-#,##0'});
+    if(i%2===1) fill(ws1,row,1,row,6,'FFF1F6F9');
+  }
+
+  const tot = h1 + 7;
+  put(ws1,tot,1,'TOTAL', {bold:true, color:'FFFFFFFF', fill:ARGB.navy, border:true});
+  put(ws1,tot,2,{formula:'=SUM(B'+(h1+1)+':B'+(h1+6)+')'}, {bold:true, align:'right', numFmt:'#,##0', fill:ARGB.mint, border:true});
+  put(ws1,tot,3,{formula:'=SUM(C'+(h1+1)+':C'+(h1+6)+')'}, {bold:true, align:'right', numFmt:'#,##0', fill:ARGB.mint, border:true});
+  put(ws1,tot,4,{formula:'=IFERROR(C'+tot+'/B'+tot+',0)'}, {bold:true, align:'right', numFmt:'0.0%', fill:ARGB.mint, border:true, color:'FF2A9D8F'});
+  put(ws1,tot,5,{formula:'=SUM(E'+(h1+1)+':E'+(h1+6)+')'}, {bold:true, align:'right', numFmt:'#,##0', fill:ARGB.mint, border:true});
+  put(ws1,tot,6,{formula:'=SUM(F'+(h1+1)+':F'+(h1+6)+')'}, {bold:true, align:'right', numFmt:'#,##0;[Red]-#,##0', fill:ARGB.mint, border:true});
+
+  /* FIXED: comparison table now uses 4 clean columns, no conflicting merges */
+  r = tot + 2;
+  bar(ws1, r, 8, 'WHICH METHOD SHOULD I USE?', ARGB.teal); r++;
+  const h2 = r;
+  headRow(ws1, h2, 1, ['Method','How to do it','Reusable?','Best for'], ARGB.tealSoft);
+  const cmp = [
+    ['Paste Special ▸ Formats','Copy ▸ Paste Special ▸ Formats','No','One-off copies'],
+    ['Save as Template','Right-click chart ▸ Save as Template','Yes — manual','Brand consistency'],
+    ['Template + Default','Set as Default Chart, then Alt+F1','Yes — automatic','Daily reporting']
+  ];
+  cmp.forEach(function(rowArr,i){
+    const row = h2 + 1 + i;
+    put(ws1,row,1, rowArr[0], {bold:true, border:true, wrap:true});
+    put(ws1,row,2, rowArr[1], {border:true, wrap:true});
+    put(ws1,row,3, rowArr[2], {border:true, wrap:true, bold:true,
+        color: rowArr[2].indexOf('Yes')===0 ? 'FF2A9D8F':'FFC1553C'});
+    put(ws1,row,4, rowArr[3], {border:true, wrap:true});
+    if(i%2===1) fill(ws1,row,1,row,4,'FFF1F6F9');
+    ws1.getRow(row).height = 44;
+  });
+
+  r = h2 + 5;
+  line(ws1, r, 8, 'Keyboard shortcut: Alt + F1 inserts a chart from selected data using your default chart template.', {fill:ARGB.cream, bold:true, color:'FFC9860B'});
+
+  /* ---------- 02. PYTHON DATES ---------- */
+  const ws2 = wb.addWorksheet('02. Python Dates',
+    {properties:{tabColor:{argb:ARGB.purple}}, views:[{showGridLines:false}]});
+  ws2.columns = [{width:6},{width:26},{width:18},{width:14},{width:16},{width:13},{width:38}];
+
+  r = addFrame(ws2, {
+    title:'TRICK 2  ·  Clean Impossible Dates with Python in Excel',
+    subtitle:'=PY( pd.to_datetime(...) ) turns 10 different date formats into real Excel dates',
+    what:'Traditional Excel formulas choke on mixed date formats — some are text, some are ISO, some are 8-digit numbers. Python-in-Excel ships with pandas, so a single pd.to_datetime() call normalises every one of them into a proper date value you can sort, filter and calculate with.',
+    whatHeight:50,
+    steps:[
+      'Type =PY in a cell and press Tab — Excel switches the cell into Python mode.',
+      'Enter the expression: pd.to_datetime(B7)  (pointing at the messy date cell).',
+      'Press Ctrl + Enter (not just Enter) to execute the Python formula.',
+      'The cell returns a proper date. Drag the fill handle down for the whole column.',
+      'Column C below uses a native-Excel fallback so the file still works if Python is unavailable.'
+    ],
+    accent: ARGB.purple, accentSoft: ARGB.purpleSoft, lastCol: 7
+  });
+
+  bar(ws2, r, 7, 'LIVE EXAMPLE — 10 MESSY DATE FORMATS CLEANED', ARGB.purple); r++;
+  const hD = r;
+  headRow(ws2, hD, 1, ['#','Messy input (text)','Cleaned date (formula)','Day name','Month label','Days ago','Python equivalent (as text)'], ARGB.purple);
+
+  const messy = [
+    ['2026-02-14',        'pd.to_datetime(x)'],
+    ['14/02/2026',        'pd.to_datetime(x, dayfirst=True)'],
+    ['Feb 14, 2026',      'pd.to_datetime(x)'],
+    ['20260214',          'pd.to_datetime(x, format="%Y%m%d")'],
+    ['14-Feb-2026',       'pd.to_datetime(x)'],
+    ['2/14/2026 00:00',   'pd.to_datetime(x)'],
+    ['2026/03/01',        'pd.to_datetime(x)'],
+    ['March 1 2026',      'pd.to_datetime(x)'],
+    ['20260315',          'pd.to_datetime(x, format="%Y%m%d")'],
+    ['15-Mar-2026',       'pd.to_datetime(x)']
+  ];
+
+  messy.forEach(function(m,i){
+    const row = hD + 1 + i;
+    put(ws2,row,1, i+1, {align:'center', color:'FFFFFFFF', bold:true, fill:ARGB.purple, border:true});
+    put(ws2,row,2, m[0], {border:true, fontName:'Consolas', fontSize:10, color:'FF5A6B7B'});
+    const f = '=IFERROR(DATEVALUE(B'+row+'),IFERROR(DATE(LEFT(B'+row+',4),MID(B'+row+',5,2),RIGHT(B'+row+',2)),B'+row+'))';
+    put(ws2,row,3, {formula:f}, {border:true, align:'center', numFmt:'yyyy-mm-dd', bold:true, color:'FF5B4B8A'});
+    put(ws2,row,4, {formula:'=TEXT(C'+row+',"dddd")'}, {border:true, align:'center'});
+    put(ws2,row,5, {formula:'=TEXT(C'+row+',"mmm-yyyy")'}, {border:true, align:'center'});
+    put(ws2,row,6, {formula:'=TODAY()-C'+row}, {border:true, align:'center', numFmt:'#,##0'});
+    put(ws2,row,7, '=PY( '+m[1]+' )', {border:true, fontName:'Consolas', fontSize:10, color:'FF2A9D8F'});
+    if(i%2===1) fill(ws2,row,1,row,7,'FFF1F6F9');
+    ws2.getRow(row).height = 20;
+  });
+
+  r = hD + 12;
+  line(ws2, r, 7, 'Why Python wins here: pd.to_datetime() auto-detects the format. Excel needs a different formula for every pattern, and still fails on the 8-digit and mixed-text cases.', {fill:ARGB.cream, height:32, color:'FFC9860B', bold:true}); r++;
+  line(ws2, r, 7, 'Limitation: the native fallback in column C cannot reliably parse DD/MM/YYYY strings (row 2) in a US-locale workbook — that case genuinely needs Python or a locale-aware DATEVALUE.', {fill:ARGB.pink, height:32, color:'FFC1553C'});
+
+  /* ---------- 03. PICTURE IN CELL ---------- */
+  const ws3 = wb.addWorksheet('03. Picture In Cell',
+    {properties:{tabColor:{argb:ARGB.amber}}, views:[{showGridLines:false}]});
+  ws3.columns = [{width:6},{width:28},{width:16},{width:14},{width:14},{width:16},{width:26},{width:16}];
+
+  r = addFrame(ws3, {
+    title:'TRICK 3  ·  Embed a Picture INSIDE a Cell (not floating)',
+    subtitle:'Turn a cell note into a transparent, cell-bound image holder',
+    what:'Normally when you insert a picture it floats above the grid and breaks every time you sort, filter or resize. By converting a cell NOTE into a transparent picture holder, the image becomes glued to the cell — it moves, sorts and filters with the data.',
+    whatHeight:48,
+    steps:[
+      'Select the cell that should hold the picture.',
+      'Go to Review ▸ Notes ▸ New Note, then delete all the default text.',
+      'Right-click the border of the note ▸ Format Comment ▸ Colors and Lines tab.',
+      'Set Fill Color = No Fill and Line Color = No Fill (makes the note invisible).',
+      'Still in that dialog, open the Fill drop-down ▸ Fill Effects ▸ Picture ▸ Select Picture ▸ choose your file ▸ Insert ▸ OK ▸ OK.',
+      'The picture now lives inside the cell. Sort or filter the table and it travels with the row.'
+    ],
+    accent: ARGB.amber, accentSoft: ARGB.amberSoft, lastCol: 8
+  });
+
+  bar(ws3, r, 8, 'LIVE EXAMPLE — PRODUCT CATALOGUE (formulas calculate the value column)', ARGB.amber); r++;
+  const hP = r;
+  headRow(ws3, hP, 1, ['#','Product','SKU','Unit Price','Stock','Stock Value','Picture goes here','Status'], ARGB.amber);
+
+  const prods = [
+    ['Orion Laptop Pro 14','SKU-1041',1249, 38],
+    ['Wireless Earbuds X2', 'SKU-2277', 129, 210],
+    ['Nova Tablet 11',      'SKU-3105', 549,  74],
+    ['Pulse Smartwatch S3', 'SKU-4488', 299, 132],
+    ['Aero Keyboard K7',    'SKU-5520',  89, 305]
+  ];
+
+  prods.forEach(function(p,i){
+    const row = hP + 1 + i;
+    put(ws3,row,1, i+1, {align:'center', bold:true, color:'FFFFFFFF', fill:ARGB.amber, border:true});
+    put(ws3,row,2, p[0], {border:true, bold:true, color:'FF17405C'});
+    put(ws3,row,3, p[1], {border:true, fontName:'Consolas', fontSize:10, color:'FF5A6B7B'});
+    put(ws3,row,4, p[2], {border:true, align:'right', numFmt:'$#,##0'});
+    put(ws3,row,5, p[3], {border:true, align:'right', numFmt:'#,##0'});
+    put(ws3,row,6, {formula:'=D'+row+'*E'+row}, {border:true, align:'right', numFmt:'$#,##0', bold:true, color:'FF2A9D8F'});
+    put(ws3,row,7, '◄ paste picture into this note', {border:true, italic:true, fontSize:9, color:'FFC9860B'});
+    put(ws3,row,8, {formula:'=IF(E'+row+'<50,"Reorder","OK")'}, {border:true, align:'center', bold:true});
+    if(i%2===1) fill(ws3,row,1,row,8,'FFF1F6F9');
+    ws3.getRow(row).height = 30;
+  });
+
+  const pt = hP + 6;
+  put(ws3,pt,1,'', {fill:ARGB.navy});
+  ws3.mergeCells(pt,2,pt,5);
+  put(ws3,pt,2,'TOTAL CATALOGUE VALUE', {bold:true, color:'FFFFFFFF', fill:ARGB.navy, align:'right'});
+  put(ws3,pt,6,{formula:'=SUM(F'+(hP+1)+':F'+(hP+5)+')'}, {bold:true, align:'right', numFmt:'$#,##0', fill:ARGB.mint, border:true});
+  ws3.mergeCells(pt,7,pt,8);
+
+  r = pt + 2;
+  line(ws3, r, 8, 'Floating picture = breaks on sort/filter.  Note picture = glued to the cell. That is the whole trick.', {fill:ARGB.cream, bold:true, color:'FFC9860B', height:24});
+
+  /* ---------- 04. TWO-WAY XLOOKUP ---------- */
+  const ws4 = wb.addWorksheet('04. Two-Way XLOOKUP',
+    {properties:{tabColor:{argb:ARGB.green}}, views:[{showGridLines:false}]});
+  ws4.columns = [{width:24},{width:15},{width:15},{width:15},{width:15},{width:20},{width:20},{width:20}];
+
+  r = addFrame(ws4, {
+    title:'TRICK 4  ·  Two-Way Lookup with the XLOOKUP Space Operator',
+    subtitle:'XLOOKUP(row) SPACE XLOOKUP(column)  →  the exact intersection value',
+    what:'XLOOKUP can return an entire row or an entire column. The space character is Excel\'s INTERSECTION operator. Put a vertical XLOOKUP, a space, and a horizontal XLOOKUP in the same formula, and Excel returns only the cell where the returned row and the returned column cross. No INDEX, no MATCH, no helper cells.',
+    whatHeight:52,
+    steps:[
+      'Write the vertical XLOOKUP: =XLOOKUP(Product, ProductColumn, WholeSalesTable) — it returns the full row.',
+      'Type a single SPACE (the intersection operator).',
+      'Write the horizontal XLOOKUP: =XLOOKUP(Month, MonthHeaderRow, WholeSalesTable) — it returns the full column.',
+      'Press Enter. Excel returns only the value where the row and column intersect.',
+      'Change the yellow input cells — the result follows instantly. Use the INDEX/MATCH cell below to verify.'
+    ],
+    accent: ARGB.green, accentSoft: ARGB.greenSoft, lastCol: 8
+  });
+
+  bar(ws4, r, 8, 'LIVE DATA MATRIX — PRODUCTS × MONTHS', ARGB.green); r++;
+  const hX = r;
+  headRow(ws4, hX, 1, ['Product','Jan-2026','Feb-2026','Mar-2026','Apr-2026'], ARGB.green);
+
+  const prod4 = ['Orion Laptop Pro 14','Wireless Earbuds X2','Nova Tablet 11','Pulse Smartwatch S3'];
+  const mat4 = [
+    [3980, 4204, 4450, 4120],
+    [4420, 4701, 4890, 4650],
+    [3310, 3520, 3680, 3410],
+    [2870, 2990, 3110, 2950]
+  ];
+  const d0 = hX + 1, d1 = hX + 4;
+
+  for(let i=0;i<4;i++){
+    const row = d0 + i;
+    put(ws4,row,1, prod4[i], {border:true, bold:true, color:'FF17405C'});
+    for(let j=0;j<4;j++){
+      put(ws4,row,2+j, mat4[i][j], {border:true, align:'right', numFmt:'#,##0'});
+    }
+    if(i%2===1) fill(ws4,row,1,row,5,'FFF1F6F9');
+    ws4.getRow(row).height = 22;
+  }
+
+  r = d1 + 2;
+  bar(ws4, r, 8, 'LIVE LOOKUP — CHANGE THE YELLOW CELLS', ARGB.green); r++;
+  const pRow = r, mRow = r+1, resRow = r+2, chkRow = r+3, eqRow = r+4;
+
+  put(ws4,pRow,1,'Product', {bold:true, color:'FFFFFFFF', fill:ARGB.navy, border:true});
+  put(ws4,pRow,2,'Orion Laptop Pro 14', {fill:ARGB.yellow, bold:true, border:true, color:'FF17405C'});
+  ws4.mergeCells(pRow,3,pRow,8);
+  put(ws4,pRow,3,'◄ pick any product from the matrix above', {italic:true, fontSize:9.5, color:'FF8A9AA8'});
+
+  put(ws4,mRow,1,'Month', {bold:true, color:'FFFFFFFF', fill:ARGB.navy, border:true});
+  put(ws4,mRow,2,'Feb-2026', {fill:ARGB.yellow, bold:true, border:true, color:'FF17405C'});
+  ws4.mergeCells(mRow,3,mRow,8);
+  put(ws4,mRow,3,'◄ pick any month header from the matrix above', {italic:true, fontSize:9.5, color:'FF8A9AA8'});
+
+  /* IMPROVEMENT: dropdown validation on both yellow inputs */
+  ws4.getCell(pRow,2).dataValidation = {
+    type:'list', allowBlank:false,
+    formulae:['"'+prod4.join(',')+'"'],
+    showErrorMessage:true, errorTitle:'Pick a product',
+    error:'Choose one of the product names listed in the matrix above.'
+  };
+  ws4.getCell(mRow,2).dataValidation = {
+    type:'list', allowBlank:false,
+    formulae:['"Jan-2026,Feb-2026,Mar-2026,Apr-2026"'],
+    showErrorMessage:true, errorTitle:'Pick a month',
+    error:'Choose one of the month headers listed in the matrix above.'
+  };
+
+  const twoWay =
+    '=_xlfn.XLOOKUP(B'+pRow+',$A$'+d0+':$A$'+d1+',$B$'+d0+':$E$'+d1+') ' +
+    '_xlfn.XLOOKUP(B'+mRow+',$B$'+hX+':$E$'+hX+',$B$'+d0+':$E$'+d1+')';
+
+  put(ws4,resRow,1,'★ SPACE OPERATOR RESULT', {bold:true, color:'FFFFFFFF', fill:ARGB.green, border:true});
+  put(ws4,resRow,2, {formula:twoWay}, {bold:true, align:'right', numFmt:'#,##0', fill:ARGB.mint, border:true, color:'FF2A9D8F'});
+  ws4.mergeCells(resRow,3,resRow,8);
+  put(ws4,resRow,3,'= XLOOKUP(product, …) SPACE XLOOKUP(month, …)', {fontName:'Consolas', fontSize:10, color:'FF1F7A8C'});
+
+  const classic =
+    '=INDEX($B$'+d0+':$E$'+d1+',MATCH(B'+pRow+',$A$'+d0+':$A$'+d1+',0),MATCH(B'+mRow+',$B$'+hX+':$E$'+hX+',0))';
+
+  put(ws4,chkRow,1,'INDEX/MATCH check', {bold:true, color:'FFFFFFFF', fill:ARGB.navySoft, border:true});
+  put(ws4,chkRow,2, {formula:classic}, {align:'right', numFmt:'#,##0', border:true});
+  ws4.mergeCells(chkRow,3,chkRow,8);
+  put(ws4,chkRow,3,'classic verification formula — must equal the green cell', {italic:true, fontSize:9.5, color:'FF8A9AA8'});
+
+  put(ws4,eqRow,1,'Do they match?', {bold:true, color:'FFFFFFFF', fill:ARGB.navySoft, border:true});
+  put(ws4,eqRow,2, {formula:'=IF(B'+resRow+'=B'+chkRow+',"✔ IDENTICAL","✖ DIFFERENT")'}, {bold:true, align:'center', fill:ARGB.mint, border:true, color:'FF2A9D8F'});
+  ws4.mergeCells(eqRow,3,eqRow,8);
+  put(ws4,eqRow,3,'Both methods must always produce the same number.', {italic:true, fontSize:9.5, color:'FF8A9AA8'});
+
+  r = eqRow + 2;
+  bar(ws4, r, 8, 'HOW IT WORKS — PLAIN ENGLISH', ARGB.greenSoft); r++;
+  line(ws4, r, 8, 'XLOOKUP #1 returns the whole ROW  {3980, 4204, 4450, 4120}', {height:22, fontName:'Consolas', fill:ARGB.pale, color:'FF1F7A8C'}); r++;
+  line(ws4, r, 8, 'XLOOKUP #2 returns the whole COLUMN {4204, 4701, 3520, 2990}', {height:22, fontName:'Consolas', fill:ARGB.pale, color:'FF1F7A8C'}); r++;
+  line(ws4, r, 8, 'The SPACE between them = INTERSECTION → only 4204 survives.', {height:22, fontName:'Consolas', fill:ARGB.cream, color:'FFC9860B', bold:true}); r++;
+  line(ws4, r, 8, 'If your build returns #NULL!, the intersection operator did not resolve the XLOOKUP as a reference — use the INDEX/MATCH check cell instead.', {height:30, italic:true, color:'FF5A6B7B'});
+
+  /* ---------- 05. CUSTOM SORT ---------- */
+  const ws5 = wb.addWorksheet('05. Custom Sort',
+    {properties:{tabColor:{argb:ARGB.rose}}, views:[{showGridLines:false}]});
+  ws5.columns = [{width:18},{width:20},{width:14},{width:4},{width:4},{width:16},{width:34},{width:20}];
+
+  r = addFrame(ws5, {
+    title:'TRICK 5  ·  Sort by YOUR List, not A→Z (SORTBY + XMATCH)',
+    subtitle:'Force the order India → UK → USA → Germany → Japan instead of alphabetical',
+    what:'Normal sorting is alphabetical or numeric. But business reports need a custom sequence — regions, priority levels, product tiers. SORTBY lets you sort by any array. Feed it XMATCH, which converts each country into its position in YOUR custom list, and the data re-orders itself exactly how you want. Change the list order and everything updates instantly.',
+    whatHeight:54,
+    steps:[
+      'Write your desired order as a vertical list (column G below).',
+      'XMATCH(countryColumn, customList, 0) returns, for every row, the position of that country in your list.',
+      'Wrap it: =SORTBY(dataRange, XMATCH(countryColumn, customList, 0)).',
+      'The data sorts by those position numbers — 1, 2, 3… — i.e. your custom order.',
+      'Re-order the list in column G and watch the sorted block on the left re-sort itself.'
+    ],
+    accent: ARGB.rose, accentSoft: ARGB.roseSoft, lastCol: 8
+  });
+
+  bar(ws5, r, 8, 'LIVE DATA (UNSORTED)  +  YOUR CUSTOM ORDER LIST', ARGB.rose); r++;
+  const hS = r;
+  headRow(ws5, hS, 1, ['Country','Sales Rep','Sales ($)'], ARGB.rose);
+  headRow(ws5, hS, 6, ['Rank','Country (your order)','Position'], ARGB.roseSoft);
+
+  const sortData = [
+    ['USA','Dana Whitfield', 41200],
+    ['Japan','Kenji Mori', 28700],
+    ['India','Priya Raman', 58300],
+    ['Germany','Lukas Brandt', 33600],
+    ['UK','Emma Clarke', 45100],
+    ['India','Arjun Nair', 51900],
+    ['USA','Ryan Cole', 37400],
+    ['Japan','Yuki Tanaka', 31200],
+    ['UK','Oliver Hayes', 42800],
+    ['Germany','Anna Keller', 29500]
+  ];
+  const orderList = ['India','UK','USA','Germany','Japan'];
+
+  const s0 = hS + 1, s1 = hS + sortData.length;
+
+  sortData.forEach(function(d,i){
+    const row = s0 + i;
+    put(ws5,row,1, d[0], {border:true, bold:true, color:'FF17405C'});
+    put(ws5,row,2, d[1], {border:true});
+    put(ws5,row,3, d[2], {border:true, align:'right', numFmt:'#,##0'});
+    if(i%2===1) fill(ws5,row,1,row,3,'FFF1F6F9');
+    ws5.getRow(row).height = 20;
+  });
+
+  const o0 = hS + 1;
+  orderList.forEach(function(o,i){
+    const row = o0 + i;
+    put(ws5,row,6, i+1, {align:'center', bold:true, color:'FFFFFFFF', fill:ARGB.roseSoft, border:true});
+    put(ws5,row,7, o, {border:true, bold:true, color:'FFC1553C', fill:ARGB.pink});
+    put(ws5,row,8, 'position '+(i+1), {border:true, fontSize:9.5, italic:true, color:'FF8A9AA8'});
+    ws5.getRow(row).height = 20;
+  });
+
+  r = Math.max(s1, o0 + orderList.length - 1) + 2;
+  bar(ws5, r, 8, 'LIVE RESULT — AUTO-SORTED BY YOUR CUSTOM ORDER', ARGB.rose); r++;
+  line(ws5, r, 8, '=SORTBY(A' + s0 + ':C' + s1 + ', XMATCH(A' + s0 + ':A' + s1 + ', G' + o0 + ':G' + (o0+4) + ', 0))',
+       {height:22, fontName:'Consolas', fill:ARGB.cream, color:'FFC1553C', bold:true});
+  r++;
+
+  /* FIXED: references column G (country names), not column F (rank numbers) */
+  const sortFormula = '=_xlfn._xlws.SORTBY($A$'+s0+':$C$'+s1+',_xlfn.XMATCH($A$'+s0+':$A$'+s1+',$G$'+o0+':$G$'+(o0+4)+',0))';
+  put(ws5, r, 1, {formula: sortFormula}, {bold:true, color:'FFC1553C', border:true});
+
+  r += sortData.length + 2;
+  line(ws5, r, 8, 'The result spills into the block below. Keep those cells empty. In older Excel enter the formula with Ctrl+Shift+Enter.', {italic:true, color:'FF5A6B7B'});
+
+  /* ---------- 06. IN-CELL BARS ---------- */
+  const ws6 = wb.addWorksheet('06. In-Cell Bars',
+    {properties:{tabColor:{argb:ARGB.teal}}, views:[{showGridLines:false}]});
+  ws6.columns = [{width:6},{width:22},{width:14},{width:52},{width:30},{width:16},{width:16},{width:16}];
+
+  r = addFrame(ws6, {
+    title:'TRICK 6  ·  Bar Charts Inside a Single Cell (REPT)',
+    subtitle:'=REPT("|", value/1500) + the Playbill font = a free sparkline',
+    what:'REPT repeats a text character a given number of times. Divide the value by a scaling factor, feed it to REPT, and set the cell font to Playbill — the pipe characters merge into a solid horizontal bar. No chart object, no conditional formatting, no add-in. It sorts and filters with the data and prints perfectly.',
+    whatHeight:50,
+    steps:[
+      'Pick a scaling factor so your largest value produces a readable bar (here: value ÷ 1500).',
+      'Enter =REPT("|", ROUND(value/1500, 0)).',
+      'Drag the formula down the column.',
+      'Select the bar column ▸ set the font to Playbill, size 16, colour green.',
+      'Optional: add a second REPT column using "█" with Arial if Playbill is not installed.'
+    ],
+    accent: ARGB.teal, accentSoft: ARGB.tealSoft, lastCol: 8
+  });
+
+  bar(ws6, r, 8, 'LIVE EXAMPLE — SALES BY REP (the bar column is a formula, not a picture)', ARGB.teal); r++;
+  const hB = r;
+  headRow(ws6, hB, 1, ['#','Sales Rep','Sales ($)','Bar chart  (Playbill font)','Block alternative (Arial)'], ARGB.teal);
+
+  const reps = [
+    ['Priya Raman', 58300], ['Arjun Nair', 51900], ['Emma Clarke', 45100],
+    ['Oliver Hayes', 42800], ['Dana Whitfield', 41200], ['Ryan Cole', 37400],
+    ['Lukas Brandt', 33600], ['Yuki Tanaka', 31200], ['Kenji Mori', 28700]
+  ];
+
+  reps.forEach(function(d,i){
+    const row = hB + 1 + i;
+    put(ws6,row,1, i+1, {align:'center', bold:true, color:'FFFFFFFF', fill:ARGB.teal, border:true});
+    put(ws6,row,2, d[0], {border:true, bold:true, color:'FF17405C'});
+    put(ws6,row,3, d[1], {border:true, align:'right', numFmt:'#,##0'});
+    put(ws6,row,4, {formula:'=REPT("|",ROUND(C'+row+'/1500,0))'},
+        {border:true, fontName:'Playbill', fontSize:16, color:'FF2A9D8F', bold:true});
+    put(ws6,row,5, {formula:'=REPT("█",ROUND(C'+row+'/1500,0))'},
+        {border:true, fontName:'Arial', fontSize:11, color:'FF1F7A8C'});
+    if(i%2===1) fill(ws6,row,1,row,5,'FFF1F6F9');
+    ws6.getRow(row).height = 22;
+  });
+
+  const bTot = hB + reps.length + 1;
+  put(ws6,bTot,1,'',{fill:ARGB.navy});
+  put(ws6,bTot,2,'TOTAL', {bold:true, color:'FFFFFFFF', fill:ARGB.navy, border:true});
+  put(ws6,bTot,3,{formula:'=SUM(C'+(hB+1)+':C'+(hB+reps.length)+')'}, {bold:true, align:'right', numFmt:'#,##0', fill:ARGB.mint, border:true});
+
+  r = bTot + 2;
+  line(ws6, r, 8, 'The bar length is fully data-driven. Change any sales number and the bar redraws itself instantly.', {fill:ARGB.cream, bold:true, color:'FFC9860B', height:24});
+
+  /* ---------- 07. CLASSIC PIVOT ---------- */
+  const ws7 = wb.addWorksheet('07. Classic Pivot',
+    {properties:{tabColor:{argb:ARGB.navySoft}}, views:[{showGridLines:false}]});
+  ws7.columns = [{width:16},{width:20},{width:14},{width:4},{width:16},{width:20},{width:14},{width:16}];
+
+  r = addFrame(ws7, {
+    title:'TRICK 7  ·  The Classic Pivot Table Wizard (Alt, D, P)',
+    subtitle:'Multiple Consolidation Ranges — build one pivot from several separate data blocks',
+    what:'The modern Insert ▸ PivotTable only accepts ONE range. The legacy wizard, still fully working, accepts "Multiple Consolidation Ranges" — so you can consolidate two or three separate tables (e.g. Q1 and Q2 exports) into a single pivot without merging them by hand first.',
+    whatHeight:48,
+    steps:[
+      'Press Alt, then D, then P — the classic PivotTable and PivotChart Wizard opens.',
+      'Choose "Multiple consolidation ranges" ▸ Next.',
+      'Choose "I will create the page fields" ▸ Next.',
+      'Add Range 1, then Add Range 2 (each range can be a separate block on the sheet).',
+      'Choose where the pivot goes ▸ Finish. Double-click any grand total to drill into the underlying rows.'
+    ],
+    accent: ARGB.navySoft, accentSoft: 'FF6A93AE', lastCol: 8
+  });
+
+  bar(ws7, r, 8, 'RANGE 1 — Q1 EXPORT', ARGB.navySoft); r++;
+  let hQ = r;
+  headRow(ws7, hQ, 1, ['Region','Product','Amount'], ARGB.navySoft);
+  const r1data = [
+    ['India','Laptop', 42000], ['India','Tablet', 18500],
+    ['UK','Laptop', 31000],   ['UK','Phone', 22400],
+    ['USA','Tablet', 27600],  ['USA','Phone', 33800]
+  ];
+  const q1a = hQ+1, q1b = hQ+6;
+  r1data.forEach(function(d,i){
+    const row = q1a+i;
+    put(ws7,row,1,d[0],{border:true}); put(ws7,row,2,d[1],{border:true});
+    put(ws7,row,3,d[2],{border:true, align:'right', numFmt:'#,##0'});
+    if(i%2===1) fill(ws7,row,1,row,3,'FFF1F6F9');
+  });
+
+  r = q1b + 2;
+  bar(ws7, r, 8, 'RANGE 2 — Q2 EXPORT (a completely separate block)', ARGB.navySoft); r++;
+  hQ = r;
+  headRow(ws7, hQ, 1, ['Region','Product','Amount'], ARGB.navySoft);
+  const r2data = [
+    ['India','Laptop', 46800], ['India','Phone', 19200],
+    ['UK','Tablet', 25700],    ['UK','Laptop', 33500],
+    ['USA','Phone', 36100],    ['USA','Tablet', 29800]
+  ];
+  const q2a = hQ+1, q2b = hQ+6;
+  r2data.forEach(function(d,i){
+    const row = q2a+i;
+    put(ws7,row,1,d[0],{border:true}); put(ws7,row,2,d[1],{border:true});
+    put(ws7,row,3,d[2],{border:true, align:'right', numFmt:'#,##0'});
+    if(i%2===1) fill(ws7,row,1,row,3,'FFF1F6F9');
+  });
+
+  r = q2b + 2;
+  bar(ws7, r, 8, 'CONSOLIDATED SUMMARY — rebuilt with SUMIF across both ranges', ARGB.navySoft); r++;
+  const hC = r;
+  headRow(ws7, hC, 1, ['Region','Q1 ($)','Q2 ($)','Total ($)','Share of total'], ARGB.navySoft);
+  ws7.getColumn(5).width = 16;
+
+  const regions = ['India','UK','USA'];
+  regions.forEach(function(rg,i){
+    const row = hC + 1 + i;
+    put(ws7,row,1, rg, {border:true, bold:true, color:'FF17405C'});
+    put(ws7,row,2, {formula:'=SUMIF($A$'+q1a+':$A$'+q1b+',A'+row+',$C$'+q1a+':$C$'+q1b+')'},
+        {border:true, align:'right', numFmt:'#,##0'});
+    put(ws7,row,3, {formula:'=SUMIF($A$'+q2a+':$A$'+q2b+',A'+row+',$C$'+q2a+':$C$'+q2b+')'},
+        {border:true, align:'right', numFmt:'#,##0'});
+    put(ws7,row,4, {formula:'=B'+row+'+C'+row}, {border:true, align:'right', numFmt:'#,##0', bold:true, color:'FF2A9D8F'});
+    put(ws7,row,5, {formula:'=D'+row+'/SUM($D$'+(hC+1)+':$D$'+(hC+3)+')'}, {border:true, align:'right', numFmt:'0.0%'});
+    if(i%2===1) fill(ws7,row,1,row,5,'FFF1F6F9');
+  });
+  const gRow = hC + 4;
+  put(ws7,gRow,1,'GRAND TOTAL', {bold:true, color:'FFFFFFFF', fill:ARGB.navySoft, border:true});
+  put(ws7,gRow,2,{formula:'=SUM(B'+(hC+1)+':B'+(hC+3)+')'}, {bold:true, align:'right', numFmt:'#,##0', fill:ARGB.mint, border:true});
+  put(ws7,gRow,3,{formula:'=SUM(C'+(hC+1)+':C'+(hC+3)+')'}, {bold:true, align:'right', numFmt:'#,##0', fill:ARGB.mint, border:true});
+  put(ws7,gRow,4,{formula:'=SUM(D'+(hC+1)+':D'+(hC+3)+')'}, {bold:true, align:'right', numFmt:'#,##0', fill:ARGB.mint, border:true});
+  put(ws7,gRow,5,{formula:'=SUM(E'+(hC+1)+':E'+(hC+3)+')'}, {bold:true, align:'right', numFmt:'0.0%', fill:ARGB.mint, border:true});
+
+  r = gRow + 2;
+  line(ws7, r, 8, 'The wizard does the consolidation visually; SUMIF/SUMIFS above prove the same numbers live in the sheet.', {fill:ARGB.cream, bold:true, color:'FFC9860B', height:24});
+
+  /* ---------- 08. PERCENT FIX ---------- */
+  const ws8 = wb.addWorksheet('08. Percent Fix',
+    {properties:{tabColor:{argb:ARGB.amber}}, views:[{showGridLines:false}]});
+  ws8.columns = [{width:6},{width:26},{width:18},{width:20},{width:20},{width:34},{width:16},{width:16}];
+
+  r = addFrame(ws8, {
+    title:'TRICK 8  ·  Fix Percentages Stored as Plain Numbers',
+    subtitle:'When 45 should display as 45.0% — divide by 100 with Paste Special',
+    what:'Data exported from other systems often stores 45 meaning 45%. Applying the % format to 45 gives 4500.0% because Excel multiplies by 100 for display. The fix is to divide the raw values by 100 FIRST, then apply the percentage format.',
+    whatHeight:48,
+    steps:[
+      'Type 100 in any empty cell.',
+      'Copy that cell (Ctrl + C).',
+      'Select the whole range of raw percentage numbers.',
+      'Right-click ▸ Paste Special ▸ in the Operation group choose Divide ▸ OK.',
+      'Every value is now divided by 100. Now apply Ctrl+1 ▸ Percentage ▸ 1 decimal place.',
+      'Clear the helper cell. Column E below shows the live result of that same operation.'
+    ],
+    accent: ARGB.amber, accentSoft: ARGB.amberSoft, lastCol: 8
+  });
+
+  bar(ws8, r, 8, 'LIVE EXAMPLE — RAW VALUES vs CORRECTED PERCENTAGES', ARGB.amber); r++;
+  const hPe = r;
+  headRow(ws8, hPe, 1, ['#','Metric','Raw value','Wrong: =raw with %','Correct: =raw/100 with %','Status'], ARGB.amber);
+
+  const pctData = [
+    ['Conversion rate', 45], ['Email open rate', 62.5], ['Churn rate', 8.4],
+    ['Upsell rate', 27.3], ['Renewal rate', 88], ['Refund rate', 3.2],
+    ['Repeat purchase', 51.9]
+  ];
+
+  pctData.forEach(function(d,i){
+    const row = hPe + 1 + i;
+    put(ws8,row,1, i+1, {align:'center', bold:true, color:'FFFFFFFF', fill:ARGB.amber, border:true});
+    put(ws8,row,2, d[0], {border:true, bold:true, color:'FF17405C'});
+    put(ws8,row,3, d[1], {border:true, align:'right', numFmt:'0.0'});
+    put(ws8,row,4, {formula:'=C'+row}, {border:true, align:'right', numFmt:'0.0%', color:'FFC1553C'});
+    put(ws8,row,5, {formula:'=C'+row+'/100'}, {border:true, align:'right', numFmt:'0.0%', bold:true, color:'FF2A9D8F'});
+    put(ws8,row,6, {formula:'=IF(E'+row+'>1,"✖ still wrong","✔ correct")'}, {border:true, align:'center'});
+    if(i%2===1) fill(ws8,row,1,row,6,'FFF1F6F9');
+  });
+
+  r = hPe + pctData.length + 2;
+  line(ws8, r, 8, 'Look at column D: 45 with a % format shows 4500.0% — that is the bug. Column E divides by 100 first and shows the true 45.0%.', {fill:ARGB.cream, bold:true, color:'FFC9860B', height:30});
+
+  /* ---------- 09. HIDE VALUES ---------- */
+  const ws9 = wb.addWorksheet('09. Hide Values',
+    {properties:{tabColor:{argb:ARGB.purple}}, views:[{showGridLines:false}]});
+  ws9.columns = [{width:6},{width:26},{width:16},{width:22},{width:22},{width:36},{width:16},{width:16}];
+
+  r = addFrame(ws9, {
+    title:'TRICK 9  ·  Hide Cell Values with the ;;; Custom Format',
+    subtitle:'Invisible on screen, still fully alive in every formula',
+    what:'The custom number format ;;; has three empty sections (positive; negative; zero) — plus the fourth text section is also blank. Excel therefore renders NOTHING, but the underlying value is untouched. Formulas that reference the cell keep working. Perfect for hiding helper columns before a presentation.',
+    whatHeight:48,
+    steps:[
+      'Select the cells you want to make invisible.',
+      'Press Ctrl + 1 to open Format Cells.',
+      'Go to the Number tab ▸ choose Custom.',
+      'Type three semicolons: ;;;   and click OK.',
+      'The values vanish but column E still calculates from them.',
+      'To bring them back, select the cells ▸ Ctrl+1 ▸ Custom ▸ type General.'
+    ],
+    accent: ARGB.purple, accentSoft: ARGB.purpleSoft, lastCol: 8
+  });
+
+  bar(ws9, r, 8, 'LIVE EXAMPLE — COLUMN D IS HIDDEN WITH ;;; BUT STILL COMPUTES', ARGB.purple); r++;
+  const hH = r;
+  headRow(ws9, hH, 1, ['#','KPI','Visible value','HIDDEN value (format ;;;)','Doubled from hidden','Explanation'], ARGB.purple);
+
+  const kpi = [
+    ['Raw revenue', 128400], ['Internal cost', 79250], ['Gross margin', 49150],
+    ['Secret bonus pool', 18400], ['Reserve buffer', 25750]
+  ];
+
+  kpi.forEach(function(d,i){
+    const row = hH + 1 + i;
+    put(ws9,row,1, i+1, {align:'center', bold:true, color:'FFFFFFFF', fill:ARGB.purple, border:true});
+    put(ws9,row,2, d[0], {border:true, bold:true, color:'FF17405C'});
+    put(ws9,row,3, d[1], {border:true, align:'right', numFmt:'$#,##0'});
+    const hidden = put(ws9,row,4, d[1], {border:true, align:'right'});
+    hidden.numFmt = ';;;';
+    hidden.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF3EFF9'}};
+    put(ws9,row,5, {formula:'=D'+row+'*2'}, {border:true, align:'right', numFmt:'$#,##0', bold:true, color:'FF2A9D8F'});
+    put(ws9,row,6, 'Column D looks empty — but E = D × 2 is correct', {border:true, italic:true, fontSize:9.5, color:'FF8A9AA8'});
+    if(i%2===1){ fill(ws9,row,1,row,3,'FFF1F6F9'); fill(ws9,row,5,row,6,'FFF1F6F9'); }
+  });
+
+  r = hH + kpi.length + 2;
+  line(ws9, r, 8, 'Proof: select D' + (hH+1) + ' — the formula bar still shows ' + kpi[0][1] + '. The format hides it; the value is untouched.', {fill:ARGB.cream, bold:true, color:'FFC9860B', height:24});
+
+  /* ---------- 10. REGEX EXTRACT ---------- */
+  const ws10 = wb.addWorksheet('10. Regex Extract',
+    {properties:{tabColor:{argb:ARGB.green}}, views:[{showGridLines:false}]});
+  ws10.columns = [{width:6},{width:34},{width:24},{width:30},{width:14},{width:38},{width:16},{width:16}];
+
+  r = addFrame(ws10, {
+    title:'TRICK 10  ·  Extract Numbers from Text with REGEXREPLACE',
+    subtitle:'One function replaces 15 nested SUBSTITUTE() calls',
+    what:'Excel 365 ships REGEXREPLACE. The pattern [^0-9] means "anything that is not a digit". Replacing it with an empty string strips every letter, dash, slash and space, leaving only the numbers. Column D gives you a classic array-formula fallback for older Excel versions.',
+    whatHeight:48,
+    steps:[
+      'Enter =REGEXREPLACE(A2, "[^0-9]", "") — text, pattern, replacement.',
+      'The pattern [^0-9] matches any character that is NOT a digit.',
+      'The replacement "" deletes each match, so only digits survive.',
+      'Drag down to apply to the whole column.',
+      'For older Excel use the TEXTJOIN / MID / ROW fallback in column D.'
+    ],
+    accent: ARGB.green, accentSoft: ARGB.greenSoft, lastCol: 8
+  });
+
+  bar(ws10, r, 8, 'LIVE EXAMPLE — STRIP EVERYTHING EXCEPT THE NUMBERS', ARGB.green); r++;
+  const hR = r;
+  headRow(ws10, hR, 1, ['#','Raw text string','Digits (REGEXREPLACE)','Digits (classic fallback)','Digit count','Notes'], ARGB.green);
+
+  const rawStrings = [
+    'INV-2026-00451 / Qty 25',
+    'Order #8821 - Amount 340',
+    'SKU 44-AB-9127',
+    'Ref: XN/2026/7788 (qty 3)',
+    'Batch 0091-B, line 12',
+    'PO 55-3300-77',
+    'Tracking AU-9912-4471-X'
+  ];
+
+  rawStrings.forEach(function(s,i){
+    const row = hR + 1 + i;
+    put(ws10,row,1, i+1, {align:'center', bold:true, color:'FFFFFFFF', fill:ARGB.green, border:true});
+    put(ws10,row,2, s, {border:true, fontName:'Consolas', fontSize:10});
+    put(ws10,row,3, {formula:'=_xlfn.REGEXREPLACE(B'+row+',"[^0-9]","")'},
+        {border:true, fontName:'Consolas', fontSize:10, bold:true, color:'FF2A9D8F'});
+    put(ws10,row,4, {formula:'=_xlfn.TEXTJOIN("",TRUE,IFERROR(MID(B'+row+',ROW(INDIRECT("1:"&LEN(B'+row+'))),1)*1,""))'},
+        {border:true, fontName:'Consolas', fontSize:9, color:'FF1F7A8C'});
+    put(ws10,row,5, {formula:'=LEN(C'+row+')'}, {border:true, align:'center'});
+    put(ws10,row,6, 'strips letters, dashes, slashes, spaces, brackets',
+        {border:true, italic:true, fontSize:9.5, color:'FF8A9AA8'});
+    if(i%2===1) fill(ws10,row,1,row,6,'FFF1F6F9');
+    ws10.getRow(row).height = 21;
+  });
+
+  r = hR + rawStrings.length + 2;
+  line(ws10, r, 8, 'REGEXREPLACE requires Microsoft 365 (Insiders channel on some builds). The fallback in column D works in Excel 2019+ with dynamic arrays, or with Ctrl+Shift+Enter in older versions.', {fill:ARGB.pink, height:32, color:'FFC1553C'});
+
+  /* ---------- 11. FORMULA GUIDE (required by master prompt §7) ---------- */
+  const ws11 = wb.addWorksheet('11. Formula Guide',
+    {properties:{tabColor:{argb:ARGB.green}}, views:[{showGridLines:false}]});
+  ws11.columns = [{width:20},{width:24},{width:46},{width:30},{width:40},{width:26}];
+
+  ws11.mergeCells(1,1,1,6);
+  c = ws11.getCell(1,1);
+  c.value = 'FORMULA & FEATURES GUIDE';
+  c.font = {name:'Calibri', size:17, bold:true, color:{argb:'FFFFFFFF'}};
+  c.alignment = {vertical:'middle', horizontal:'left', indent:1};
+  fill(ws11,1,1,1,6,ARGB.green);
+  ws11.getRow(1).height = 42;
+
+  ws11.mergeCells(2,1,2,6);
+  c = ws11.getCell(2,1);
+  c.value = 'One row per meaningful formula feature  ·  Worksheet  ·  Feature  ·  Formula  ·  Purpose  ·  Steps to use  ·  Expected result';
+  c.font = {name:'Calibri', size:11, color:{argb:'FFFFFFFF'}};
+  c.alignment = {vertical:'middle', horizontal:'left', indent:1, wrapText:true};
+  fill(ws11,2,1,2,6,ARGB.greenSoft);
+  ws11.getRow(2).height = 26;
+
+  ws11.getRow(3).height = 8;
+  const gh = 4;
+  headRow(ws11, gh, 1, ['Worksheet','Feature','Formula','Purpose','Steps to Use','Expected Result'], ARGB.green);
+
+  const guideRows = [
+    ['01. Chart Templates','Profit margin %','=IFERROR(C7/B7,0)','Profit as a share of sales','Enter sales in B and profit in C; D computes automatically','A percentage such as 30.5%'],
+    ['01. Chart Templates','Variance vs target','=B7-E7','Over/under performance against the monthly target','Enter a target in E; F shows the difference','A signed dollar amount'],
+    ['01. Chart Templates','Monthly totals','=SUM(B6:B11)','Sums a full column into the TOTAL row','Nothing to do — the total row is pre-wired','The column total'],
+    ['02. Python Dates','Clean mixed dates','=IFERROR(DATEVALUE(B7),IFERROR(DATE(LEFT(B7,4),MID(B7,5,2),RIGHT(B7,2)),B7))','Turns 10 different date formats into real Excel dates','Paste or type a messy date into column B','A yyyy-mm-dd date value'],
+    ['02. Python Dates','Weekday name','=TEXT(C7,"dddd")','Extracts the weekday from the cleaned date','Automatic from column C','e.g. "Saturday"'],
+    ['02. Python Dates','Record age in days','=TODAY()-C7','How many days ago the record was created','Automatic from column C','A whole number of days'],
+    ['03. Picture In Cell','Stock value','=D7*E7','Unit price × stock on hand','Enter price and stock; F computes the value','A dollar value'],
+    ['03. Picture In Cell','Reorder flag','=IF(E7<50,"Reorder","OK")','Flags products that need restocking','Automatic from the stock column','"Reorder" or "OK"'],
+    ['04. Two-Way XLOOKUP','Two-way intersection lookup','=XLOOKUP(product,$A$12:$A$15,$B$12:$E$15) XLOOKUP(month,$B$11:$E$11,$B$12:$E$15)','Returns the single cell where the chosen product row meets the chosen month column','Pick a product in B24 and a month in B25 (yellow cells)','The matching sales figure'],
+    ['04. Two-Way XLOOKUP','Verification lookup','=INDEX($B$12:$E$15,MATCH(B24,$A$12:$A$15,0),MATCH(B25,$B$11:$E$11,0))','Classic check that the space-operator result is correct','Nothing to do — it mirrors the yellow inputs','The same number as the XLOOKUP cell'],
+    ['05. Custom Sort','Sort by a custom order','=SORTBY($A$12:$C$21,XMATCH($A$12:$A$21,$G$12:$G$16,0))','Re-orders rows to match your own country sequence','Edit the order list in G12:G16','Rows sorted India → UK → USA → Germany → Japan'],
+    ['06. In-Cell Bars','In-cell bar chart','=REPT("|",ROUND(C7/1500,0))','A bar whose length is proportional to sales','Enter sales in C; the bar redraws itself','A visual bar inside the cell'],
+    ['06. In-Cell Bars','Block alternative','=REPT("█",ROUND(C7/1500,0))','Same bar using a full block character','Automatic from column C','A solid block bar'],
+    ['07. Classic Pivot','Region total (Q1)','=SUMIF($A$12:$A$17,A28,$C$12:$C$17)','Sums Q1 amounts for one region','Automatic from the Q1 block','A per-region total'],
+    ['07. Classic Pivot','Region total (Q2)','=SUMIF($A$19:$A$24,A28,$C$19:$C$24)','Sums Q2 amounts for the same region','Automatic from the Q2 block','A per-region total'],
+    ['07. Classic Pivot','Grand total','=SUM(D28:D30)','Overall total across all regions','Automatic','The grand total'],
+    ['08. Percent Fix','Corrected percentage','=C7/100 (format 0.0%)','Converts a raw 45 into 45.0%','Divide by 100, then apply the % format','45.0%'],
+    ['08. Percent Fix','The bug (for comparison)','=C7 (format 0.0%)','Shows why raw 45 becomes 4500.0%','Apply the % format without dividing first','4500.0% — the wrong result'],
+    ['09. Hide Values','Hidden but still calculated','=D7*2 (D7 formatted ;;;)','Proves a hidden cell still feeds formulas','Apply the ;;; custom format to D7','E7 shows twice the hidden value'],
+    ['10. Regex Extract','Digits only','=REGEXREPLACE(B7,"[^0-9]","")','Strips every non-digit character','Automatic from column B','A pure digit string'],
+    ['10. Regex Extract','Classic fallback','=TEXTJOIN("",TRUE,IFERROR(MID(B7,ROW(INDIRECT("1:"&LEN(B7))),1)*1,""))','Same result without REGEXREPLACE','Automatic from column B','The same digit string']
+  ];
+
+  guideRows.forEach(function(rowArr, i){
+    const row = gh + 1 + i;
+    rowArr.forEach(function(v, j){
+      put(ws11, row, j+1, v, {
+        border:true, wrap:true,
+        fontName: j===2 ? 'Consolas' : 'Calibri',
+        fontSize: j===2 ? 9.5 : 10,
+        color: j===2 ? 'FF1F7A8C' : (j===0 ? 'FF17405C' : 'FF1F2A35'),
+        bold: j===0
+      });
+    });
+    if(i%2===1) fill(ws11,row,1,row,6,'FFF1F6F9');
+    ws11.getRow(row).height = 40;
+  });
+
+  let gr = gh + guideRows.length + 2;
+  line(ws11, gr, 6, 'Formula display note: future functions are stored with the _xlfn. prefix inside the .xlsx file (e.g. _xlfn.XLOOKUP, _xlfn._xlws.SORTBY, _xlfn.REGEXREPLACE). Excel 365 strips the prefix in the formula bar, so you see the clean name. Older Excel versions that do not know the function will show #NAME? — that is expected, not a file error.', {fill:ARGB.cream, height:44, color:'FFC9860B', bold:true});
+  gr++;
+  line(ws11, gr, 6, 'Python note: the =PY() Python-in-Excel syntax cannot be written into a file by a script. The Python Dates tab shows the exact Python expression as text and provides a live native-Excel fallback formula in the adjacent column.', {fill:ARGB.pink, height:38, color:'FFC1553C'});
+
+  /* ---------- FINAL ---------- */
+  [ws0,ws1,ws2,ws3,ws4,ws5,ws6,ws7,ws8,ws9,ws10,ws11].forEach(function(w){
+    w.properties.defaultRowHeight = 20;
+  });
+
+  return wb;
+}
+
+/* ============================================================
+   4. WIRE UP THE PAGE
+   ============================================================ */
+document.getElementById('downloadBtn').addEventListener('click', async function(){
+  const btn = this;
+  const status = document.getElementById('status');
+
+  if(typeof ExcelJS === 'undefined'){
+    status.className = 'err';
+    status.textContent = '✖ Could not load the Excel library. Check your internet connection and reload the page.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Building workbook…';
+  status.className = '';
+  status.textContent = '';
+
+  try {
+    const wb = await buildWorkbook();
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '10-Excel-Tricks-Live-Workbook.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 2500);
+
+    status.className = 'ok';
+    status.textContent = '✔ Done — 12 tabs generated (00–11) with live formulas. Open the file in Excel and everything recalculates automatically.';
+  } catch(err){
+    console.error(err);
+    status.className = 'err';
+    status.textContent = '✖ Something went wrong: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬇ Download Excel Workbook (.xlsx)';
+  }
+});
+
+/* ---------- render the cards ---------- */
+const previews = {
+  4: `<table class="mini">
+        <tr><th>Product</th><th>Feb-2026</th></tr>
+        <tr><td>Orion Laptop Pro 14</td><td class="num-cell">4,204</td></tr>
+        <tr><td>Wireless Earbuds X2</td><td class="num-cell">4,701</td></tr>
+      </table>`,
+  5: `<table class="mini">
+        <tr><th>Custom order</th><th>Result</th></tr>
+        <tr><td>1 · India</td><td>sorted first</td></tr>
+        <tr><td>2 · UK</td><td>sorted second</td></tr>
+      </table>`,
+  6: `<table class="mini">
+        <tr><th>Rep</th><th>Bar (REPT)</th></tr>
+        <tr><td>Priya</td><td style="color:#2a9d8f;font-weight:700">||||||||||||||||||||||||||||||||||||||</td></tr>
+        <tr><td>Kenji</td><td style="color:#2a9d8f;font-weight:700">|||||||||||||||||||</td></tr>
+      </table>`,
+  10:`<table class="mini">
+        <tr><th>Raw text</th><th>Digits</th></tr>
+        <tr><td>INV-2026-00451</td><td class="num-cell">202600451</td></tr>
+        <tr><td>PO 55-3300-77</td><td class="num-cell">55330077</td></tr>
+      </table>`
+};
+
+const cardsEl = document.getElementById('cards');
+TRICKS.forEach(function(t){
+  const hex = '#' + t.color.slice(2);
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML =
+    '<div class="card-head" style="background:linear-gradient(135deg,' + hex + 'cc,' + hex + ')">' +
+      '<div class="num">' + t.n + '</div>' +
+      '<h4>' + t.name + '</h4>' +
+    '</div>' +
+    '<div class="card-body">' +
+      '<p>' + t.desc + '</p>' +
+      '<div class="chip">' + t.formula + '</div>' +
+      (previews[t.n] || '') +
+      '<div class="need">Needs: ' + t.needs + ' &nbsp;·&nbsp; Tab: ' + t.tab + '</div>' +
+    '</div>';
+  cardsEl.appendChild(card);
+});
+</script>
+</body>
+</html>
