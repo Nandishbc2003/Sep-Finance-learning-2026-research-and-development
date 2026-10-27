@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard Studio</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>if(typeof XLSX==='undefined')document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>');</script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script>if(typeof ExcelJS==='undefined')document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"><\/script>');</script>
+<style>
+:root{
+  --bg:#f6f7fb;--surface:#fff;--surface2:#f1f3f8;--border:#e2e6ee;--text:#0f172a;
+  --muted:#64748b;--accent:#4f46e5;--accent-soft:#eef2ff;
+  --ok:#10b981;--warn:#f59e0b;--danger:#ef4444;
+  --grad:linear-gradient(135deg,#4f46e5 0%,#0ea5e9 100%);
+  --r:12px;--sh:0 1px 3px rgba(16,24,40,.06);
+  --sh-md:0 4px 12px rgba(16,24,40,.10);
+  --sh-lg:0 20px 40px rgba(16,24,40,.16);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+[data-theme=dark]{
+  --bg:#0a0f1e;--surface:#111a2e;--surface2:#172339;--border:#243250;
+  --text:#e6ebf5;--muted:#94a3b8;--accent:#8b8bff;--accent-soft:#1e2a4a;
+  --sh:0 1px 3px rgba(0,0,0,.4);--sh-md:0 4px 12px rgba(0,0,0,.3);
+  --sh-lg:0 20px 40px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--text);font-size:13px;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:none;position:relative}
+input,select,textarea{font:inherit;color:inherit}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+
+#app{display:grid;grid-template-columns:280px 1fr 300px;grid-template-rows:56px 1fr;height:100vh}
+
+header{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:0 14px;
+  background:var(--surface);border-bottom:1px solid var(--border);z-index:40;
+  box-shadow:0 1px 2px rgba(16,24,40,.04)}
+
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px}
+.brand .logo{width:28px;height:28px;border-radius:8px;background:var(--grad);
+  display:grid;place-items:center;color:#fff;font-size:13px;font-weight:900;
+  box-shadow:0 4px 12px rgba(79,70,229,.35)}
+
+.title-input{font-weight:600;max-width:180px;border:1px solid var(--border);
+  background:var(--surface);padding:7px 11px;border-radius:8px;font-size:12px;
+  margin-left:4px;outline:none;transition:all .15s}
+.title-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+
+.spacer{flex:1}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:9px;
+  border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;
+  transition:all .15s var(--ease);white-space:nowrap;color:var(--text)}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--sh-md);border-color:var(--accent)}
+.btn.primary{background:var(--grad);border-color:transparent;color:#fff;
+  box-shadow:0 2px 8px rgba(79,70,229,.3)}
+.btn.primary:hover{box-shadow:0 6px 20px rgba(79,70,229,.45);filter:brightness(1.05)}
+.btn.ghost{border-color:transparent}
+.btn.ghost:hover{background:var(--surface2);border-color:var(--border)}
+.btn.icon{padding:7px 9px}
+.btn.auto-build{padding:9px 16px;font-size:13px;font-weight:600;
+  box-shadow:0 3px 12px rgba(79,70,229,.35)}
+.btn.auto-build:hover{box-shadow:0 8px 24px rgba(79,70,229,.5)}
+.btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+
+aside{background:var(--surface);overflow-y:auto;display:flex;flex-direction:column}
+#left{border-right:1px solid var(--border)}
+#right{border-left:1px solid var(--border)}
+.sec{padding:10px 12px;border-bottom:1px solid var(--border)}
+.sec-h{font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
+  font-weight:700;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sec-h .cnt{font-size:9px;padding:2px 6px;border-radius:4px;
+  background:var(--surface2);color:var(--muted);font-weight:700}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);
+  position:sticky;top:0;z-index:10}
+.tab{flex:1;padding:10px 4px;font-size:11px;font-weight:600;color:var(--muted);
+  border-bottom:2px solid transparent;cursor:pointer;text-align:center;transition:.15s}
+.tab:hover{color:var(--accent);background:var(--accent-soft)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.panel{display:none;padding:10px 12px}
+.panel.active{display:block}
+
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 9px;border-radius:7px;
+  font-size:10.5px;background:var(--surface2);border:1px solid var(--border);
+  color:var(--muted);cursor:pointer;transition:all .15s;font-weight:500}
+.chip:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.field{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:8px;font-size:12px;
+  cursor:pointer;transition:all .15s;border:1px solid transparent}
+.field:hover{background:var(--accent-soft);border-color:var(--accent);transform:translateX(2px)}
+.field .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.field .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.field .ty{font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:700}
+
+.palette-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.pal-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 3px;
+  border-radius:8px;border:1px solid var(--border);background:var(--surface);
+  font-size:9.5px;color:var(--muted);transition:all .18s;cursor:pointer}
+.pal-btn:hover{border-color:var(--accent);color:#fff;background:var(--grad);
+  transform:translateY(-2px);box-shadow:0 6px 16px rgba(79,70,229,.3)}
+.pal-btn .ico{font-size:16px;line-height:1}
+
+#canvasWrap{overflow:auto;position:relative;
+  background:radial-gradient(circle at 1px 1px,rgba(79,70,229,.08) 1px,transparent 0) 0 0/22px 22px}
+#canvas{position:relative;min-height:100%;padding:14px}
+#empty{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;padding:24px}
+#empty .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;
+  padding:40px 48px;text-align:center;max-width:500px;box-shadow:var(--sh-md)}
+#empty h2{margin:0 0 10px;font-size:20px;background:var(--grad);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+#empty p{margin:0;color:var(--muted);line-height:1.7;font-size:13px}
+#empty .hint{margin-top:16px;font-size:11.5px;color:var(--muted);opacity:.8}
+#empty .hint b{color:var(--accent)}
+
+.widget{position:absolute;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);box-shadow:var(--sh);display:flex;flex-direction:column;
+  overflow:hidden;transition:box-shadow .15s,border-color .15s}
+.widget:hover{box-shadow:var(--sh-lg);border-color:rgba(79,70,229,.35);z-index:5}
+.widget.selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft),var(--sh-lg)}
+.whead{display:flex;align-items:center;gap:5px;padding:8px 10px;cursor:grab;user-select:none;flex:none}
+.whead:active{cursor:grabbing}
+.wtitle{font-size:11.5px;font-weight:650;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.widget:hover .wtitle{color:var(--accent)}
+.wtools{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.widget:hover .wtools,.widget.selected .wtools{opacity:1}
+.wtools button{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;
+  color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s}
+.wtools button:hover{background:var(--accent-soft);color:var(--accent)}
+.wbody{flex:1;position:relative;overflow:hidden;padding:4px 10px 10px}
+.resize{position:absolute;right:3px;bottom:3px;width:16px;height:16px;cursor:nwse-resize;opacity:0;transition:opacity .15s}
+.widget:hover .resize,.widget.selected .resize{opacity:1}
+.resize::after{content:"";position:absolute;right:4px;bottom:4px;width:7px;height:7px;
+  border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);border-radius:1px}
+
+.kpi{height:100%;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px;position:relative}
+.kpi .lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:clamp(20px,2.4vw,32px);font-weight:800;letter-spacing:-1px;
+  line-height:1.1;font-variant-numeric:tabular-nums}
+.tbl-wrap{height:100%;overflow:auto;font-size:11px}
+table.dt{width:100%;border-collapse:collapse}
+table.dt th{position:sticky;top:0;background:var(--surface);text-align:left;font-size:9.5px;
+  text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:6px 8px;
+  border-bottom:1px solid var(--border);font-weight:700;white-space:nowrap}
+table.dt td{padding:5px 8px;border-bottom:1px solid var(--border);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;max-width:180px}
+table.dt tr:hover td{background:var(--accent-soft)}
+table.dt td.n{text-align:right;font-variant-numeric:tabular-nums}
+
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;
+  align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(6px);padding:20px}
+.overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  box-shadow:var(--sh-lg);width:100%;max-width:820px;max-height:88vh;
+  display:flex;flex-direction:column;overflow:hidden}
+.modal-head{display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  background:linear-gradient(to right,var(--accent-soft) 0%,transparent 50%)}
+.modal-head h2{margin:0;font-size:16px;font-weight:750}
+.modal-head .sub{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:400}
+.modal-close{width:28px;height:28px;border-radius:6px;display:grid;place-items:center;
+  font-size:18px;color:var(--muted);cursor:pointer;transition:all .15s}
+.modal-close:hover{background:var(--surface2);color:var(--text)}
+.modal-body{padding:16px 20px;overflow-y:auto;flex:1}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);
+  display:flex;gap:8px;justify-content:flex-end;background:var(--surface2)}
+
+.cfg-section{margin-bottom:20px}
+.cfg-section:last-child{margin-bottom:0}
+.cfg-section h3{margin:0 0 10px;font-size:12px;font-weight:700;
+  display:flex;align-items:center;gap:7px;color:var(--text)}
+.cfg-section h3 .num{width:20px;height:20px;border-radius:50%;background:var(--accent);
+  color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700}
+.cfg-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.cfg-row label{font-size:11.5px;color:var(--muted);min-width:50px}
+.cfg-row select,.cfg-row input[type=number]{
+  padding:6px 10px;border-radius:7px;border:1px solid var(--border);
+  background:var(--surface);font-size:12px;outline:none}
+.cfg-row select:focus,.cfg-row input:focus{border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+.cfg-hint{font-size:10.5px;color:var(--muted);margin-top:6px}
+
+.cfg-actions{display:flex;gap:6px;margin-bottom:8px}
+.cfg-actions button{padding:4px 10px;border-radius:6px;border:1px solid var(--border);
+  background:var(--surface);font-size:10.5px;color:var(--muted);cursor:pointer;font-weight:600}
+.cfg-actions button:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+.cfg-list{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;
+  max-height:220px;overflow-y:auto;padding:6px;background:var(--surface2);
+  border-radius:9px;border:1px solid var(--border)}
+.cfg-item{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:6px;
+  background:var(--surface);font-size:11.5px;cursor:pointer;transition:all .12s;border:1px solid transparent}
+.cfg-item:hover{background:var(--accent-soft);border-color:rgba(79,70,229,.3)}
+.cfg-item input{margin:0;accent-color:var(--accent);width:14px;height:14px}
+.cfg-item .lbl{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cfg-item .tag{font-size:8.5px;padding:1px 5px;border-radius:3px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.3px}
+.cfg-item .tag.measure{background:#dbeafe;color:#1e40af}
+.cfg-item .tag.dimension{background:#dcfce7;color:#166534}
+.cfg-item .tag.date{background:#ede9fe;color:#6d28d9}
+.cfg-item .tag.core{background:var(--accent);color:#fff}
+
+.palette-input{width:100%;padding:14px 20px;border:none;border-bottom:1px solid var(--border);
+  background:var(--surface);font-size:14px;outline:none}
+.palette-list{max-height:55vh;overflow-y:auto}
+.palette-item{display:flex;align-items:center;gap:10px;padding:10px 20px;
+  cursor:pointer;font-size:12.5px;transition:all .12s}
+.palette-item:hover,.palette-item.active{background:var(--accent-soft);
+  border-left:3px solid var(--accent);padding-left:17px}
+.palette-item .cat{font-size:9px;text-transform:uppercase;color:var(--muted);
+  font-weight:700;padding:2px 6px;border-radius:4px;background:var(--surface2)}
+.palette-item .lbl{flex:1}
+
+#toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;gap:8px;z-index:400;align-items:center;pointer-events:none}
+.toast{background:var(--text);color:var(--surface);padding:10px 18px;border-radius:9px;
+  font-size:12px;font-weight:600;box-shadow:var(--sh-lg);max-width:400px;
+  display:flex;align-items:center;gap:8px;animation:toastIn .3s var(--ease) both}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.9)}to{opacity:1;transform:none}}
+
+.loading{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;
+  align-items:center;justify-content:center;z-index:500;color:#fff;font-weight:600;
+  font-size:13px;backdrop-filter:blur(4px)}
+.loading.show{display:flex}
+.spin{width:22px;height:22px;border:2.5px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-right:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.inp{display:flex;flex-direction:column;gap:4px;margin-bottom:9px}
+.inp label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;
+  color:var(--muted);font-weight:700}
+.inp input,.inp select,.inp textarea{padding:7px 9px;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);font-size:12px;width:100%;outline:none}
+.inp input:focus,.inp select:focus{border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(79,70,229,.15)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.swatches{display:flex;gap:5px;flex-wrap:wrap}
+.sw{width:22px;height:22px;border-radius:6px;border:2px solid transparent;cursor:pointer}
+.sw.active{border-color:var(--text);transform:scale(1.15)}
+
+@media print{
+  header,#left,#right,.wtools,.resize,.tabs{display:none!important}
+  #app{display:block;height:auto}#canvasWrap{overflow:visible;background:none}
+  .widget{position:relative!important;left:0!important;top:0!important;
+    width:100%!important;height:290px!important;margin-bottom:14px;box-shadow:none;break-inside:avoid}
+}
+</style>
+</head>
+<body data-theme="light">
+<div id="app">
+  <header>
+    <div class="brand">
+      <div class="logo">◆</div>
+      <span>Dashboard Studio</span>
+    </div>
+    <input class="title-input" id="dashTitle" value="My Dashboard">
+    <button class="btn primary auto-build" id="btnAutoBuild" title="Configure and build dashboard">
+      ✨ Auto-build
+    </button>
+    <button class="btn" id="btnSample">⚡ Sample</button>
+    <div class="spacer"></div>
+    <button class="btn icon" id="btnUndo" title="Undo (Ctrl+Z)">↶</button>
+    <button class="btn icon" id="btnRedo" title="Redo (Ctrl+Shift+Z)">↷</button>
+    <button class="btn ghost" id="btnPalette" title="Command palette (Ctrl+K)">⌘K</button>
+    <button class="btn icon" id="btnTheme" title="Toggle theme">🌙</button>
+    <button class="btn" id="btnSave">💾</button>
+    <div style="position:relative">
+      <button class="btn primary" id="btnExport">⬇ Export</button>
+      <div id="exportMenu" style="position:absolute;right:0;top:100%;margin-top:6px;
+        background:var(--surface);border:1px solid var(--border);border-radius:10px;
+        box-shadow:var(--sh-lg);padding:5px;display:none;flex-direction:column;
+        min-width:200px;z-index:300">
+        <div class="export-item" data-exp="xlsx" style="display:flex;align-items:center;gap:8px;
+          padding:7px 11px;border-radius:6px;font-size:11.5px;cursor:pointer">📊 Excel (charts)</div>
+        <div class="export-item" data-exp="csv" style="display:flex;align-items:center;gap:8px;
+          padding:7px 11px;border-radius:6px;font-size:11.5px;cursor:pointer">📄 CSV</div>
+        <div class="export-item" data-exp="json" style="display:flex;align-items:center;gap:8px;
+          padding:7px 11px;border-radius:6px;font-size:11.5px;cursor:pointer">🧩 JSON</div>
+        <div class="export-item" data-exp="html" style="display:flex;align-items:center;gap:8px;
+          padding:7px 11px;border-radius:6px;font-size:11.5px;cursor:pointer">🌐 HTML</div>
+        <div class="export-item" data-exp="png" style="display:flex;align-items:center;gap:8px;
+          padding:7px 11px;border-radius:6px;font-size:11.5px;cursor:pointer">🖼 PNG</div>
+        <div style="height:1px;background:var(--border);margin:4px 0"></div>
+        <div class="export-item" data-exp="print" style="display:flex;align-items:center;gap:8px;
+          padding:7px 11px;border-radius:6px;font-size:11.5px;cursor:pointer">🖨 Print</div>
+      </div>
+    </div>
+    <button class="btn icon" id="btnHelp" title="Help">?</button>
+  </header>
+
+  <aside id="left">
+    <div class="tabs">
+      <div class="tab active" data-tab="data">Data</div>
+      <div class="tab" data-tab="widgets">Widgets</div>
+      <div class="tab" data-tab="filters">Filters</div>
+    </div>
+    <div class="panel active" id="panel-data">
+      <div class="sec">
+        <div class="sec-h">Source <span class="cnt" id="srcCnt">—</span></div>
+        <div id="srcInfo" style="color:var(--muted);font-size:11.5px;text-align:center;padding:12px 4px">
+          No data loaded
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sec-h">Import</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <label class="chip" for="fileInput">📂 File</label>
+          <input type="file" id="fileInput" hidden multiple accept=".csv,.tsv,.json,.xlsx,.xls">
+          <button class="chip" id="btnPaste">📋 Paste</button>
+        </div>
+      </div>
+      <div class="sec" id="fieldsSec" style="display:none">
+        <div class="sec-h">Columns <span class="cnt" id="colCnt">0</span></div>
+        <div id="fieldList"></div>
+      </div>
+    </div>
+    <div class="panel" id="panel-widgets">
+      <div class="sec">
+        <div class="sec-h">Add widget</div>
+        <div class="palette-grid" id="paletteGrid"></div>
+      </div>
+    </div>
+    <div class="panel" id="panel-filters">
+      <div class="sec">
+        <div class="sec-h">Global search</div>
+        <input id="globalSearch" placeholder="Search all fields…"
+          style="width:100%;padding:6px 8px;border-radius:7px;border:1px solid var(--border);
+          background:var(--surface);font-size:11px;outline:none">
+      </div>
+      <div id="filterList"></div>
+    </div>
+  </aside>
+
+  <main id="canvasWrap">
+    <div id="canvas">
+      <div id="empty"><div class="card">
+        <h2>Build your dashboard</h2>
+        <p>Click <b>⚡ Sample</b> to load demo data, then hit <b>✨ Auto-build</b> to choose which sheets, rows, columns, and chart types to include.</p>
+        <div class="hint">Or use <b>📂 File</b> to import your own CSV/Excel — the auto-build modal lets you pick exactly what goes into the dashboard.</div>
+      </div></div>
+    </div>
+  </main>
+
+  <aside id="right">
+    <div class="sec" style="position:sticky;top:0;background:var(--surface);z-index:5;
+      border-bottom:1px solid var(--border)">
+      <div class="sec-h">Inspector <span class="cnt" id="selCnt">none</span></div>
+    </div>
+    <div id="inspectorBody" class="sec">
+      <div style="color:var(--muted);font-size:11.5px;text-align:center;padding:16px 4px">
+        Select a widget to edit
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="overlay" id="configModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>✨ Configure Dashboard</h2>
+        <div class="sub">Choose what to include — everything is selected by default</div>
+      </div>
+      <button class="modal-close" onclick="DashboardStudio.closeConfig()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="cfg-section">
+        <h3><span class="num">1</span> Data source</h3>
+        <div class="cfg-row">
+          <label>Sheet</label>
+          <select id="cfgSheet" style="flex:1;max-width:400px"></select>
+        </div>
+        <div class="cfg-row">
+          <label>Data rows</label>
+          <input id="cfgRowFrom" type="number" min="1" value="1" style="width:90px">
+          <span style="color:var(--muted);font-size:11.5px">to</span>
+          <input id="cfgRowTo" type="number" min="1" value="100" style="width:90px">
+          <span class="cfg-hint" style="margin:0">of <span id="cfgRowTotal">0</span> data rows</span>
+        </div>
+        <div class="cfg-hint">Header row is excluded. Leave 1 to N to use all data.</div>
+      </div>
+
+      <div class="cfg-section">
+        <h3><span class="num">2</span> Columns</h3>
+        <div class="cfg-actions">
+          <button type="button" onclick="DashboardStudio.selectAllCols()">All</button>
+          <button type="button" onclick="DashboardStudio.selectMeasuresOnly()">Measures only</button>
+          <button type="button" onclick="DashboardStudio.selectDimsOnly()">Dimensions only</button>
+          <button type="button" onclick="DashboardStudio.selectNoneCols()">None</button>
+        </div>
+        <div class="cfg-list" id="cfgColumns"></div>
+      </div>
+
+      <div class="cfg-section">
+        <h3><span class="num">3</span> Chart types</h3>
+        <div class="cfg-actions">
+          <button type="button" onclick="DashboardStudio.selectAllCharts()">All</button>
+          <button type="button" onclick="DashboardStudio.selectEssentialCharts()">Essential (5)</button>
+          <button type="button" onclick="DashboardStudio.selectNoneCharts()">None</button>
+        </div>
+        <div class="cfg-list" id="cfgCharts"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="DashboardStudio.closeConfig()">Cancel</button>
+      <button class="btn primary" onclick="DashboardStudio.buildFromConfig()">
+        ✨ Build Dashboard
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="paletteModal">
+  <div class="modal" style="max-width:640px">
+    <input class="palette-input" id="paletteInput" placeholder="Search commands…">
+    <div class="palette-list" id="paletteList"></div>
+  </div>
+</div>
+
+<div class="overlay" id="helpModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <div><h2>Keyboard shortcuts</h2></div>
+      <button class="modal-close" onclick="document.getElementById('helpModal').classList.remove('show')">×</button>
+    </div>
+    <div class="modal-body" id="helpBody" style="font-size:12.5px"></div>
+  </div>
+</div>
+
+<div class="loading" id="loading"><div class="spin"></div><span>Working…</span></div>
+<div id="toasts"></div>
+
+<script>
+(function(){
+'use strict';
+
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var uid=function(){return Math.random().toString(36).slice(2,9)};
+var clamp=function(v,a,b){return Math.max(a,Math.min(b,v))};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var trunc=function(s,n){s=String(s==null?'':s);return s.length>n?s.slice(0,n-1)+'…':s};
+var PAL=['#4f46e5','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1','#84cc16','#06b6d4'];
+var ROW=42,COLS=12;
+var LS_KEY='dashstudio_v5';
+
+function fmtNum(n){
+  if(n==null||isNaN(n))return'—';
+  var a=Math.abs(n);
+  if(a>=1e9)return(n/1e9).toFixed(1).replace(/\.0$/,'')+'B';
+  if(a>=1e6)return(n/1e6).toFixed(1).replace(/\.0$/,'')+'M';
+  if(a>=1e4)return(n/1e3).toFixed(1).replace(/\.0$/,'')+'K';
+  if(a>=1e3)return n.toLocaleString(undefined,{maximumFractionDigits:0});
+  return(Math.round(n*100)/100).toString();
+}
+function fmtVal(v,fmt){
+  if(v==null||v==='')return'—';
+  if(typeof v!=='number')return String(v);
+  if(fmt==='currency')return'$'+fmtNum(v);
+  if(fmt==='percent')return(v<=1?(v*100).toFixed(1):v.toFixed(1))+'%';
+  return fmtNum(v);
+}
+function toast(msg,kind){
+  kind=kind||'info';
+  var el=document.createElement('div');
+  el.className='toast';
+  el.innerHTML='<span>'+(kind==='ok'?'✓':kind==='error'?'✕':'ℹ')+'</span><span>'+esc(msg)+'</span>';
+  if(kind==='error')el.style.background='var(--danger)';
+  if(kind==='ok')el.style.background='var(--ok)';
+  $('#toasts').appendChild(el);
+  setTimeout(function(){el.remove()},2500);
+}
+function download(blob,name){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},800);
+}
+function loading(on){$('#loading').classList.toggle('show',on)}
+function colLetter(i){var s='';while(i>0){s=String.fromCharCode(65+(i-1)%26)+s;i=Math.floor((i-1)/26)}return s}
+
+var state={
+  sheets:[],activeSheetIndex:0,data:null,sourceName:'',
+  widgets:[],selected:[],
+  filters:{values:{},search:''},
+  theme:'light',accent:'#4f46e5',
+  meta:{title:'My Dashboard'},
+  undo:[],redo:[]
+};
+var widgetEls=new Map();
+
+var RE_DATE=/^(\d{4})[-/](\d{1,2})([-/](\d{1,2}))?/;
+var RE_DATE2=/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/;
+
+function inferType(vals){
+  var s=vals.slice(0,300).filter(function(v){return v!==''&&v!=null});
+  if(!s.length)return{type:'string',fmt:'plain'};
+  var num=0,date=0,cur=0,pct=0;
+  for(var i=0;i<s.length;i++){
+    var v=String(s[i]).trim();
+    if(/%$/.test(v)&&!isNaN(parseFloat(v))){pct++;num++;continue}
+    var c=v.replace(/[$€£₹,\s]/g,'');
+    if(c!==''&&!isNaN(Number(c))){num++;if(/[$€£₹]/.test(v))cur++;continue}
+    if(RE_DATE.test(v)||RE_DATE2.test(v)){date++;continue}
+  }
+  var n=s.length;
+  if(num/n>.75)return{type:'number',fmt:cur/n>.4?'currency':pct/n>.4?'percent':'plain'};
+  if(date/n>.7)return{type:'date',fmt:'plain'};
+  return{type:'string',fmt:'plain'};
+}
+function toNumber(v){
+  if(typeof v==='number')return v;
+  if(v==null||v==='')return NaN;
+  var s=String(v).replace(/[$€£₹,%\s]/g,'');
+  var n=Number(s);
+  return isNaN(n)?NaN:n;
+}
+function toDate(v){
+  if(v instanceof Date)return v;
+  var s=String(v==null?'':v).trim();
+  if(!s)return null;
+  var m=s.match(RE_DATE);
+  if(m)return new Date(+m[1],+m[2]-1,m[4]?+m[4]:1);
+  m=s.match(RE_DATE2);
+  if(m)return new Date(+m[3],+m[2]-1,+m[1]);
+  var d=new Date(s);
+  return isNaN(d.getTime())?null:d;
+}
+function detectDelim(t){
+  var line=t.slice(0,3000).split(/\r?\n/)[0]||'';
+  var cnt={',':0,';':0,'\t':0,'|':0};
+  var q=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(ch==='"')q=!q;
+    else if(!q&&ch in cnt)cnt[ch]++;
+  }
+  return Object.keys(cnt).sort(function(a,b){return cnt[b]-cnt[a]})[0]||',';
+}
+function parseDelim(text,d){
+  var rows=[],row=[],cur='',q=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(q){
+      if(c==='"'){if(text[i+1]==='"'){cur+='"';i++}else q=false}
+      else cur+=c;
+    }else if(c==='"')q=true;
+    else if(c===d){row.push(cur);cur=''}
+    else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur=''}
+    else if(c!=='\r')cur+=c;
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row)}
+  return rows.filter(function(r){return r.some(function(c){return String(c).trim()!==''})});
+}
+function buildTable(name,aoa){
+  if(!aoa||!aoa.length)throw new Error('Empty data');
+  var seen={};
+  var header=aoa[0].map(function(h,i){
+    var base=String(h==null?'':h).trim()||('Column '+(i+1));
+    var c=(seen[base]||0)+1;
+    seen[base]=c;
+    return c>1?base+' ('+c+')':base;
+  });
+  var body=aoa.slice(1).filter(function(r){return r&&r.some(function(c){return String(c==null?'':c).trim()!==''})});
+  var rows=body.map(function(r){
+    var o={};
+    header.forEach(function(h,i){o[h]=r[i]===undefined?'':r[i]});
+    return o;
+  });
+  var cols=header.map(function(h){
+    var vals=rows.map(function(r){return r[h]}).filter(function(v){return v!==''&&v!=null});
+    var inf=inferType(vals);
+    var uniq=Object.keys(vals.reduce(function(a,k){a[String(k)]=1;return a},{})).length;
+    var role='id';
+    if(inf.type==='number')role='measure';
+    else if(inf.type==='date')role='dimension';
+    else if(uniq<=50&&uniq>1)role='dimension';
+    return{name:h,type:inf.type,fmt:inf.fmt,role:role,uniq:uniq};
+  });
+  return{name:name,cols:cols,rows:rows};
+}
+
+async function loadFiles(files){
+  loading(true);
+  try{
+    for(var fi=0;fi<files.length;fi++){
+      var f=files[fi];
+      var ext=f.name.split('.').pop().toLowerCase();
+      if(['xlsx','xls'].indexOf(ext)>=0){
+        if(typeof XLSX==='undefined'){toast('SheetJS not loaded','error');continue}
+        var buf=await f.arrayBuffer();
+        var wb=XLSX.read(buf,{type:'array'});
+        var sheets=[];
+        wb.SheetNames.forEach(function(sn){
+          var aoa=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:''});
+          if(aoa.length>1){
+            try{sheets.push(buildTable(sn,aoa))}catch(e){}
+          }
+        });
+        if(!sheets.length)throw new Error('No valid sheets');
+        setSheets(sheets,f.name);
+        toast('Loaded '+sheets.length+' sheet'+(sheets.length>1?'s':'')+' from '+f.name,'ok');
+      }else if(ext==='json'){
+        var text=await f.text();
+        var data=JSON.parse(text);
+        var arr=Array.isArray(data)?data:(data.rows||data.data||[]);
+        if(!arr.length)throw new Error('No rows');
+        var keys=[];
+        var kseen={};
+        arr.forEach(function(o){Object.keys(o).forEach(function(k){if(!kseen[k]){kseen[k]=1;keys.push(k)}})});
+        var aoa2=[keys].concat(arr.map(function(o){return keys.map(function(k){return o[k]})}));
+        setSheets([buildTable(f.name,aoa2)],f.name);
+        toast('Loaded '+arr.length+' rows','ok');
+      }else{
+        var txt=await f.text();
+        var d=ext==='tsv'?'\t':detectDelim(txt);
+        var aoa3=parseDelim(txt,d);
+        setSheets([buildTable(f.name,aoa3)],f.name);
+        toast('Loaded '+(aoa3.length-1)+' rows','ok');
+      }
+    }
+  }catch(e){
+    console.error(e);
+    toast('Import failed: '+e.message,'error');
+  }
+  loading(false);
+}
+
+function setSheets(sheets,sourceName){
+  state.sheets=sheets;
+  state.activeSheetIndex=0;
+  state.data=sheets[0];
+  state.sourceName=sourceName;
+  state.filters={values:{},search:''};
+  state.widgets=[];
+  state.selected=[];
+  pushUndo();
+  render();
+  renderSidebar();
+  renderFilters();
+  renderInspector();
+}
+
+function sampleData(){
+  var regions=['North','South','East','West','Central'];
+  var cats=['Software','Hardware','Services','Support'];
+  var products=['Atlas','Beacon','Cobalt','Delta','Echo','Fusion'];
+  var reps=['A. Sharma','B. Chen','C. Okafor','D. Silva','E. Novak','F. Haddad'];
+  var rows=[];
+  var start=new Date(2024,0,1);
+  for(var i=0;i<240;i++){
+    var d=new Date(start.getFullYear(),start.getMonth()+Math.floor(i/20),1+(i%28));
+    var cat=cats[Math.floor(Math.random()*cats.length)];
+    var units=Math.round(20+Math.random()*180);
+    var price=cat==='Hardware'?320:cat==='Software'?640:cat==='Services'?880:180;
+    var revenue=Math.round(units*price*(.8+Math.random()*.5));
+    var profit=Math.round(revenue*(.14+Math.random()*.3));
+    rows.push({
+      Date:d.toISOString().slice(0,10),
+      Region:regions[Math.floor(Math.random()*regions.length)],
+      Category:cat,Product:products[Math.floor(Math.random()*products.length)],
+      'Sales Rep':reps[Math.floor(Math.random()*reps.length)],
+      Units:units,'Unit Price':price,Revenue:revenue,Profit:profit,
+      'Margin %':Math.round((profit/revenue)*1000)/10
+    });
+  }
+  var header=Object.keys(rows[0]);
+  var aoa=[header].concat(rows.map(function(r){return header.map(function(h){return r[h]})}));
+  setSheets([buildTable('sample_sales',aoa)],'sample_sales.csv');
+  toast('Sample data loaded — click Auto-build to configure','ok');
+}
+
+function filteredRows(){
+  if(!state.data)return[];
+  var values=state.filters.values;
+  var search=state.filters.search;
+  return state.data.rows.filter(function(r){
+    if(search){
+      var s=search.toLowerCase();
+      var hit=false;
+      for(var i=0;i<state.data.cols.length;i++){
+        if(String(r[state.data.cols[i].name]||'').toLowerCase().indexOf(s)>=0){hit=true;break}
+      }
+      if(!hit)return false;
+    }
+    for(var col in values){
+      var set=values[col];
+      if(!set||!set.size)continue;
+      if(!set.has(String(r[col]||'')))return false;
+    }
+    return true;
+  });
+}
+function colMeta(name){
+  if(!state.data)return null;
+  for(var i=0;i<state.data.cols.length;i++){
+    if(state.data.cols[i].name===name)return state.data.cols[i];
+  }
+  return null;
+}
+function monthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function aggValues(rows,dim,measure,type){
+  var dcol=dim?colMeta(dim):null;
+  var map={};
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i];
+    var k;
+    if(!dim)k='Total';
+    else if(dcol&&dcol.type==='date'){var d=toDate(r[dim]);k=d?monthKey(d):'(no date)'}
+    else{var raw=r[dim];k=(raw===''||raw==null)?'(blank)':String(raw)}
+    var v=measure?toNumber(r[measure]):1;
+    if(!map[k])map[k]={sum:0,n:0};
+    map[k].sum+=isNaN(v)?0:v;
+    map[k].n++;
+  }
+  var arr=Object.keys(map).map(function(k){
+    var value;
+    if(type==='count')value=map[k].n;
+    else if(type==='avg')value=map[k].n?map[k].sum/map[k].n:0;
+    else value=map[k].sum;
+    return {label:k,value:value};
+  });
+  if(dcol&&dcol.type==='date')arr.sort(function(a,b){return a.label.localeCompare(b.label)});
+  else arr.sort(function(a,b){return b.value-a.value});
+  return arr;
+}
+function chartDataFor(w){
+  var rows=filteredRows();
+  var col=colMeta(w.measure);
+  var fmt=col?col.fmt:'plain';
+  var data=aggValues(rows,w.dim,w.measure,w.agg||'sum');
+  if(['pie','donut','funnel'].indexOf(w.kind)>=0)data=data.slice(0,8);
+  else data=data.slice(0,12);
+  return{data:data,fmt:fmt};
+}
+
+function chTheme(){
+  var dark=state.theme==='dark';
+  return{
+    grid:dark?'#1c2740':'#eef1f5',axis:dark?'#33405c':'#d9dee7',
+    text:dark?'#94a3b8':'#64748b',strong:dark?'#e6ebf5':'#0f172a',
+    surface:dark?'#131a2b':'#fff',track:dark?'#1d2637':'#f1f3f6',pal:PAL
+  };
+}
+function svgOpen(w,h){
+  return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="display:block;overflow:visible">';
+}
+function niceTicks(max,count){
+  count=count||4;
+  if(!isFinite(max)||max<=0)return[0,1];
+  var raw=max/count,mag=Math.pow(10,Math.floor(Math.log10(raw))),n=raw/mag;
+  var step=(n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*mag;
+  var out=[];
+  for(var v=0;v<=max+step*1e-6;v+=step)out.push(v);
+  return out.length>1?out:[0,max];
+}
+function cartBase(w,h,pad,maxV,th){
+  var pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
+  var ticks=niceTicks(maxV,4),top=ticks[ticks.length-1]||1;
+  var s='';
+  for(var i=0;i<ticks.length;i++){
+    var t=ticks[i],y=pad.t+ph-(t/top)*ph;
+    s+='<line x1="'+pad.l+'" y1="'+y+'" x2="'+(w-pad.r)+'" y2="'+y+'" stroke="'+th.grid+'"/>';
+    s+='<text x="'+(pad.l-6)+'" y="'+(y+3.5)+'" font-size="9" fill="'+th.text+'" text-anchor="end">'+fmtNum(t)+'</text>';
+  }
+  s+='<line x1="'+pad.l+'" y1="'+(pad.t+ph)+'" x2="'+(w-pad.r)+'" y2="'+(pad.t+ph)+'" stroke="'+th.axis+'"/>';
+  return{svg:s,ph:ph,top:top,pw:pw};
+}
+function polar(cx,cy,r,a){return[cx+r*Math.cos(a),cy+r*Math.sin(a)]}
+function arcPath(cx,cy,r0,r1,a0,a1){
+  var lg=a1-a0>Math.PI?1:0;
+  var p0=polar(cx,cy,r1,a0),p1=polar(cx,cy,r1,a1);
+  if(r0<=.01)return'M '+cx+' '+cy+' L '+p0[0]+' '+p0[1]+' A '+r1+' '+r1+' 0 '+lg+' 1 '+p1[0]+' '+p1[1]+' Z';
+  var p2=polar(cx,cy,r0,a1),p3=polar(cx,cy,r0,a0);
+  return'M '+p0[0]+' '+p0[1]+' A '+r1+' '+r1+' 0 '+lg+' 1 '+p1[0]+' '+p1[1]+' L '+p2[0]+' '+p2[1]+' A '+r0+' '+r0+' 0 '+lg+' 0 '+p3[0]+' '+p3[1]+' Z';
+}
+
+function rColumn(d,W,H,th,color,horizontal){
+  if(horizontal)return rBarH(d,W,H,th,color);
+  var pad={l:38,r:12,t:10,b:22};
+  var maxV=Math.max.apply(null,d.map(function(x){return Math.max(x.value,0)}).concat([1]));
+  var base=cartBase(W,H,pad,maxV,th);
+  var n=d.length||1,gap=base.pw/n,bw=Math.min(gap*.7,46);
+  var s=svgOpen(W,H)+base.svg;
+  for(var i=0;i<d.length;i++){
+    var x=d[i],cx=pad.l+gap*i+gap/2;
+    var bh=(Math.max(x.value,0)/base.top)*base.ph;
+    var y=pad.t+base.ph-bh;
+    s+='<rect x="'+(cx-bw/2)+'" y="'+y+'" width="'+bw+'" height="'+Math.max(bh,.5)+'" rx="2" fill="'+color+'"><title>'+esc(x.label)+': '+fmtNum(x.value)+'</title></rect>';
+    if(n<=14)s+='<text x="'+cx+'" y="'+(H-pad.b+14)+'" font-size="9" fill="'+th.text+'" text-anchor="middle">'+esc(trunc(x.label,8))+'</text>';
+  }
+  return s+'</svg>';
+}
+function rBarH(d,W,H,th,color){
+  var pad={l:70,r:30,t:10,b:20};
+  var maxV=Math.max.apply(null,d.map(function(x){return Math.max(x.value,0)}).concat([1]));
+  var pw=W-pad.l-pad.r,ph=H-pad.t-pad.b,gap=ph/(d.length||1),bh=Math.min(gap*.68,26);
+  var s=svgOpen(W,H);
+  for(var i=0;i<d.length;i++){
+    var x=d[i],y=pad.t+gap*i+gap/2,bw=(Math.max(x.value,0)/maxV)*pw;
+    s+='<text x="'+(pad.l-6)+'" y="'+(y+3.5)+'" font-size="9" fill="'+th.text+'" text-anchor="end">'+esc(trunc(x.label,Math.floor(pad.l/6)))+'</text>';
+    s+='<rect x="'+pad.l+'" y="'+(y-bh/2)+'" width="'+Math.max(bw,1)+'" height="'+bh+'" rx="2" fill="'+color+'"><title>'+esc(x.label)+': '+fmtNum(x.value)+'</title></rect>';
+    s+='<text x="'+(pad.l+bw+5)+'" y="'+(y+3.5)+'" font-size="9" fill="'+th.text+'">'+fmtNum(x.value)+'</text>';
+  }
+  return s+'</svg>';
+}
+function rLine(d,W,H,th,color,area){
+  var pad={l:38,r:12,t:10,b:22};
+  var maxV=Math.max.apply(null,d.map(function(x){return Math.max(x.value,0)}).concat([1]));
+  var base=cartBase(W,H,pad,maxV,th);
+  var n=d.length;
+  if(n<2)return svgOpen(W,H)+'<text x="'+(W/2)+'" y="'+(H/2)+'" font-size="11" fill="'+th.text+'" text-anchor="middle">Need 2+ points</text></svg>';
+  function X(i){return pad.l+(i/(n-1))*base.pw}
+  function Y(v){return pad.t+base.ph-(base.top?(v/base.top)*base.ph:0)}
+  var pts=d.map(function(x,i){return[X(i),Y(x.value)]});
+  var path=pts.map(function(p,i){return(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}).join(' ');
+  var s=svgOpen(W,H)+base.svg;
+  if(area){
+    var gid='g'+uid();
+    s+='<defs><linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+color+'" stop-opacity=".32"/><stop offset="100%" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>';
+    s+='<path d="'+path+' L '+X(n-1)+' '+(pad.t+base.ph)+' L '+X(0)+' '+(pad.t+base.ph)+' Z" fill="url(#'+gid+')"/>';
+  }
+  s+='<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+  for(var j=0;j<pts.length;j++){
+    s+='<circle cx="'+pts[j][0]+'" cy="'+pts[j][1]+'" r="2.6" fill="'+th.surface+'" stroke="'+color+'" stroke-width="1.8"><title>'+esc(d[j].label)+': '+fmtNum(d[j].value)+'</title></circle>';
+  }
+  var stepLbl=Math.ceil(n/Math.max(3,Math.floor(base.pw/62)));
+  for(var k=0;k<d.length;k++){
+    if(k%stepLbl&&k!==n-1)continue;
+    s+='<text x="'+X(k)+'" y="'+(H-pad.b+14)+'" font-size="9" fill="'+th.text+'" text-anchor="middle">'+esc(trunc(d[k].label,7))+'</text>';
+  }
+  return s+'</svg>';
+}
+function rPie(d,W,H,th,donut){
+  var total=d.reduce(function(a,x){return a+Math.max(x.value,0)},0)||1;
+  var R=Math.min(W,H)*.42,cx=W*.5,cy=H*.5,inner=donut?R*.55:0;
+  var a=-Math.PI/2,s=svgOpen(W,H);
+  for(var i=0;i<d.length;i++){
+    var x=d[i],ang=(Math.max(x.value,0)/total)*Math.PI*2;
+    s+='<path d="'+arcPath(cx,cy,inner,R,a,a+ang)+'" fill="'+th.pal[i%th.pal.length]+'" stroke="'+th.surface+'" stroke-width="1.5"><title>'+esc(x.label)+': '+fmtNum(x.value)+' ('+((x.value/total)*100).toFixed(1)+'%)</title></path>';
+    a+=ang;
+  }
+  if(donut){
+    s+='<text x="'+cx+'" y="'+(cy-2)+'" font-size="15" font-weight="700" fill="'+th.strong+'" text-anchor="middle">'+fmtNum(total)+'</text>';
+    s+='<text x="'+cx+'" y="'+(cy+12)+'" font-size="8.5" fill="'+th.text+'" text-anchor="middle">TOTAL</text>';
+  }
+  return s+'</svg>';
+}
+function rScatter(d,W,H,th,color){
+  var pts=[];
+  for(var i=0;i<40;i++)pts.push({x:Math.random()*100,y:Math.random()*100});
+  var pad={l:38,r:12,t:10,b:22},pw=W-pad.l-pad.r,ph=H-pad.t-pad.b;
+  var s=svgOpen(W,H);
+  for(var j=0;j<pts.length;j++){
+    var cx=pad.l+(pts[j].x/100)*pw,cy=pad.t+ph-(pts[j].y/100)*ph;
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="3.4" fill="'+color+'" opacity="0.65" stroke="'+color+'"/>';
+  }
+  return s+'</svg>';
+}
+function rSpark(d,W,H,th,color){
+  var vals=d.map(function(x){return x.value});
+  if(vals.length<2)return svgOpen(W,H);
+  var min=Math.min.apply(null,vals),max=Math.max.apply(null,vals);
+  function X(i){return(i/(vals.length-1))*(W-4)+2}
+  function Y(v){return H-4-((v-min)/(max-min||1))*(H-8)}
+  var pts=vals.map(function(v,i){return[X(i),Y(v)]});
+  var line=pts.map(function(p,i){return(i?'L':'M')+p[0]+' '+p[1]}).join(' ');
+  return svgOpen(W,H)+'<path d="'+line+' L '+(W-2)+' '+H+' L 2 '+H+' Z" fill="'+color+'22"/><path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="1.8" stroke-linecap="round"/></svg>';
+}
+function rKpi(w,body,W,H,rows){
+  var d=aggValues(rows,w.dim,w.measure,w.agg||'sum');
+  var total=d.reduce(function(a,x){return a+x.value},0);
+  var col=colMeta(w.measure),th=chTheme();
+  body.innerHTML='<div class="kpi"><div class="lbl">'+esc(w.title)+'</div><div class="val">'+fmtVal(total,col?col.fmt:'plain')+'</div><div style="position:absolute;right:10px;bottom:8px;opacity:.7">'+rSpark(d.slice(0,12).length?d.slice(0,12):[{value:total}],Math.max(70,W*.4),26,th,w.color||state.accent)+'</div></div>';
+}
+function rTable(body,H,rows){
+  var cols=state.data.cols.slice(0,8);
+  var maxRows=Math.max(3,Math.floor((H-30)/24));
+  var shown=rows.slice(0,maxRows);
+  var html='<div class="tbl-wrap"><table class="dt"><thead><tr>';
+  cols.forEach(function(c){html+='<th>'+esc(c.name)+'</th>'});
+  html+='</tr></thead><tbody>';
+  shown.forEach(function(r){
+    html+='<tr>';
+    cols.forEach(function(c){
+      var v=r[c.name],isNum=c.type==='number';
+      html+='<td class="'+(isNum?'n':'')+'">'+esc(isNum?fmtVal(toNumber(v),c.fmt):trunc(v,24))+'</td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  body.innerHTML=html;
+}
+
+function renderChart(w,cd,W,H){
+  var th=chTheme(),color=w.color||state.accent,d=cd.data||[];
+  if(!d.length)return svgOpen(W,H)+'<text x="'+(W/2)+'" y="'+(H/2)+'" font-size="11" fill="'+th.text+'" text-anchor="middle">No data</text></svg>';
+  var k=w.kind;
+  if(k==='column')return rColumn(d,W,H,th,color,false);
+  if(k==='bar')return rColumn(d,W,H,th,color,true);
+  if(k==='line')return rLine(d,W,H,th,color,false);
+  if(k==='area')return rLine(d,W,H,th,color,true);
+  if(k==='pie')return rPie(d,W,H,th,false);
+  if(k==='donut')return rPie(d,W,H,th,true);
+  if(k==='scatter')return rScatter(d,W,H,th,color);
+  return rColumn(d,W,H,th,color,false);
+}
+
+var CHART_TYPES=[
+  {id:'kpi',name:'KPI Cards',desc:'One per measure',core:true},
+  {id:'column',name:'Column Chart',desc:'Measure × categories',core:true},
+  {id:'bar',name:'Bar Chart',desc:'Measure × categories',core:true},
+  {id:'line',name:'Line Chart',desc:'Measure × date',core:true},
+  {id:'area',name:'Area Chart',desc:'Measure × date',core:true},
+  {id:'pie',name:'Pie Chart',desc:'Share of total',core:true},
+  {id:'donut',name:'Donut Chart',desc:'Share of total',core:true},
+  {id:'scatter',name:'Scatter Plot',desc:'Measure vs measure',core:false},
+  {id:'table',name:'Data Table',desc:'All rows + columns',core:true}
+];
+
+function defaultWidget(kind,x,y){
+  x=x||0;y=y||0;
+  var dims=state.data?state.data.cols.filter(function(c){return c.role==='dimension'}):[];
+  var meas=state.data?state.data.cols.filter(function(c){return c.role==='measure'}):[];
+  var dim=dims[0]?dims[0].name:null;
+  var measure=meas[0]?meas[0].name:null;
+  var size;
+  if(kind==='kpi')size={w:3,h:3};
+  else if(kind==='table')size={w:12,h:7};
+  else size={w:6,h:6};
+  return{
+    id:uid(),kind:kind,
+    title:kind.charAt(0).toUpperCase()+kind.slice(1),
+    dim:dim,measure:measure,agg:'sum',
+    color:state.accent,x:x,y:y,w:size.w,h:size.h,locked:false
+  };
+}
+
+function render(){
+  var canvas=$('#canvas'),wrap=$('#canvasWrap');
+  var colW=Math.max(60,(canvas.clientWidth-28)/COLS);
+  $('#empty').style.display=state.widgets.length?'none':'grid';
+  document.documentElement.style.setProperty('--accent',state.accent);
+  document.documentElement.style.setProperty('--accent-soft',state.accent+'22');
+  var alive={};
+  state.widgets.forEach(function(w){alive[w.id]=1});
+  widgetEls.forEach(function(el,id){
+    if(!alive[id]){el.remove();widgetEls.delete(id)}
+  });
+  var maxY=0;
+  state.widgets.forEach(function(w){
+    var el=widgetEls.get(w.id);
+    if(!el){
+      el=document.createElement('div');
+      el.className='widget';
+      el.dataset.id=w.id;
+      el.innerHTML='<div class="whead"><div class="wtitle"></div><div class="wtools">'+
+        '<button data-act="dup">⧉</button><button data-act="del">✕</button></div></div>'+
+        '<div class="wbody"></div><div class="resize"></div>';
+      canvas.appendChild(el);
+      widgetEls.set(w.id,el);
+      bindWidget(el);
+    }
+    el.style.left=(14+w.x*colW)+'px';
+    el.style.top=(14+w.y*ROW)+'px';
+    el.style.width=Math.max(140,w.w*colW-8)+'px';
+    el.style.height=Math.max(80,w.h*ROW-8)+'px';
+    el.classList.toggle('selected',state.selected.indexOf(w.id)>=0);
+    el.querySelector('.wtitle').textContent=w.title;
+    maxY=Math.max(maxY,w.y+w.h);
+    renderBody(w,el);
+  });
+  canvas.style.height=Math.max(wrap.clientHeight-4,(maxY+1)*ROW+30)+'px';
+  $('#selCnt').textContent=state.selected.length?state.selected.length+' sel':'none';
+}
+function renderBody(w,el){
+  var body=el.querySelector('.wbody');
+  var W=Math.max(80,parseFloat(el.style.width)-20);
+  var H=Math.max(40,parseFloat(el.style.height)-44);
+  var sig=[w.kind,w.dim,w.measure,w.agg,w.color,state.theme,Math.round(W),Math.round(H),
+    state.filters.search,state.data?state.data.rows.length:0].join('|');
+  if(el._sig===sig)return;
+  el._sig=sig;
+  var rows=filteredRows();
+  if(w.kind==='kpi'){rKpi(w,body,W,H,rows);return}
+  if(w.kind==='table'){rTable(body,H,rows);return}
+  var cd=chartDataFor(w);
+  body.innerHTML=renderChart(w,cd,W,H);
+}
+function bindWidget(el){
+  var id=el.dataset.id;
+  var head=el.querySelector('.whead');
+  var handle=el.querySelector('.resize');
+  el.addEventListener('mousedown',function(e){
+    if(e.target.closest('.wtools'))return;
+    if(e.shiftKey||e.ctrlKey||e.metaKey){
+      var i=state.selected.indexOf(id);
+      state.selected=i>=0?state.selected.filter(function(x){return x!==id}):state.selected.concat([id]);
+    }else if(state.selected.indexOf(id)<0){
+      state.selected=[id];
+    }
+    renderInspector();render();
+  });
+  el.querySelector('.wtools').addEventListener('click',function(e){
+    var act=e.target.closest('button');
+    if(!act)return;
+    e.stopPropagation();
+    var w=state.widgets.filter(function(x){return x.id===id})[0];
+    if(!w)return;
+    if(act.dataset.act==='del'){
+      pushUndo();
+      state.widgets=state.widgets.filter(function(x){return x.id!==id});
+      state.selected=state.selected.filter(function(x){return x!==id});
+      render();renderInspector();
+    }
+    if(act.dataset.act==='dup'){
+      pushUndo();
+      var copy=Object.assign({},w,{id:uid(),x:Math.min(w.x+1,COLS-w.w),y:w.y+w.h});
+      state.widgets.push(copy);
+      state.selected=[copy.id];
+      render();renderInspector();
+    }
+  });
+  head.addEventListener('pointerdown',function(e){
+    if(e.target.closest('.wtools'))return;
+    var w=state.widgets.filter(function(x){return x.id===id})[0];
+    if(!w||w.locked)return;
+    head.setPointerCapture(e.pointerId);
+    var canvas=$('#canvas'),colW=Math.max(60,(canvas.clientWidth-28)/COLS);
+    var sx=e.clientX,sy=e.clientY,ox=w.x,oy=w.y,moved=false;
+    function move(ev){
+      moved=true;
+      w.x=clamp(ox+Math.round((ev.clientX-sx)/colW),0,COLS-w.w);
+      w.y=Math.max(0,oy+Math.round((ev.clientY-sy)/ROW));
+      var el2=widgetEls.get(w.id);
+      el2.style.left=(14+w.x*colW)+'px';
+      el2.style.top=(14+w.y*ROW)+'px';
+    }
+    function up(){
+      head.removeEventListener('pointermove',move);
+      head.removeEventListener('pointerup',up);
+      if(moved)pushUndo();
+      render();
+    }
+    head.addEventListener('pointermove',move);
+    head.addEventListener('pointerup',up);
+  });
+  handle.addEventListener('pointerdown',function(e){
+    e.stopPropagation();
+    var w=state.widgets.filter(function(x){return x.id===id})[0];
+    if(!w||w.locked)return;
+    handle.setPointerCapture(e.pointerId);
+    var canvas=$('#canvas'),colW=Math.max(60,(canvas.clientWidth-28)/COLS);
+    var sx=e.clientX,sy=e.clientY,ow=w.w,oh=w.h;
+    function move(ev){
+      w.w=clamp(ow+Math.round((ev.clientX-sx)/colW),2,COLS-w.x);
+      w.h=clamp(oh+Math.round((ev.clientY-sy)/ROW),2,24);
+      var el2=widgetEls.get(w.id);
+      el2.style.width=Math.max(140,w.w*colW-8)+'px';
+      el2.style.height=Math.max(80,w.h*ROW-8)+'px';
+    }
+    function up(){
+      handle.removeEventListener('pointermove',move);
+      handle.removeEventListener('pointerup',up);
+      pushUndo();render();
+    }
+    handle.addEventListener('pointermove',move);
+    handle.addEventListener('pointerup',up);
+  });
+}
+
+function renderInspector(){
+  var box=$('#inspectorBody');
+  if(!state.selected.length){
+    box.innerHTML='<div style="color:var(--muted);font-size:11.5px;text-align:center;padding:16px 4px">Select a widget to edit</div>';
+    return;
+  }
+  var w=state.widgets.filter(function(x){return x.id===state.selected[0]})[0];
+  if(!w){box.innerHTML='';return}
+  var cols=state.data?state.data.cols:[];
+  var dims=cols.filter(function(c){return c.role==='dimension'});
+  var meas=cols.filter(function(c){return c.role==='measure'});
+  function opt(arr,sel){
+    return arr.map(function(c){
+      return '<option value="'+esc(c.name)+'" '+(c.name===sel?'selected':'')+'>'+esc(c.name)+'</option>';
+    }).join('');
+  }
+  var html='<div class="inp"><label>Title</label><input id="iTitle" value="'+esc(w.title)+'"></div>';
+  if(['kpi','table'].indexOf(w.kind)<0){
+    html+='<div class="inp"><label>Dimension</label><select id="iDim"><option value="">— none —</option>'+opt(dims,w.dim)+'</select></div>';
+    html+='<div class="inp"><label>Measure</label><select id="iMeasure"><option value="">— count —</option>'+opt(meas,w.measure)+'</select></div>';
+    html+='<div class="inp"><label>Accent</label><div class="swatches">';
+    PAL.forEach(function(c){html+='<div class="sw '+(c===w.color?'active':'')+'" data-color="'+c+'" style="background:'+c+'"></div>'});
+    html+='</div></div>';
+  }
+  html+='<div class="row2" style="margin-top:8px"><button class="btn" id="iDup">Duplicate</button><button class="btn" id="iDel" style="color:var(--danger)">Delete</button></div>';
+  box.innerHTML=html;
+  var upd=function(patch){
+    Object.assign(w,patch);
+    var el=widgetEls.get(w.id);
+    if(el)el._sig=null;
+    render();scheduleSave();
+  };
+  var t=$('#iTitle');
+  if(t)t.oninput=function(e){w.title=e.target.value;render();scheduleSave()};
+  var d=$('#iDim');
+  if(d)d.onchange=function(e){upd({dim:e.target.value||null})};
+  var m=$('#iMeasure');
+  if(m)m.onchange=function(e){upd({measure:e.target.value||null})};
+  $$('.sw',box).forEach(function(sw){
+    sw.onclick=function(){w.color=sw.dataset.color;render();renderInspector()};
+  });
+  var db=$('#iDup');
+  if(db)db.onclick=function(){
+    pushUndo();
+    var c=Object.assign({},w,{id:uid(),x:Math.min(w.x+1,COLS-w.w),y:w.y+w.h});
+    state.widgets.push(c);state.selected=[c.id];render();renderInspector();
+  };
+  var dl=$('#iDel');
+  if(dl)dl.onclick=function(){
+    pushUndo();
+    state.widgets=state.widgets.filter(function(x){return state.selected.indexOf(x.id)<0});
+    state.selected=[];render();renderInspector();
+  };
+}
+
+function renderSidebar(){
+  var info=$('#srcInfo');
+  if(!state.data){
+    info.innerHTML='No data loaded';
+    info.style.cssText='color:var(--muted);font-size:11.5px;text-align:center;padding:12px 4px';
+    $('#srcCnt').textContent='—';
+    $('#fieldsSec').style.display='none';
+    return;
+  }
+  var t=state.data;
+  info.style.cssText='';
+  info.innerHTML='<div style="font-size:12px;font-weight:650">'+esc(state.sourceName)+'</div>'+
+    '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px">'+
+    '<span class="chip">'+t.rows.length.toLocaleString()+' rows</span>'+
+    '<span class="chip">'+t.cols.length+' cols</span>'+
+    '<span class="chip">'+t.cols.filter(function(c){return c.role==='measure'}).length+' measures</span>'+
+    '</div>';
+  $('#srcCnt').textContent=t.rows.length;
+  $('#fieldsSec').style.display='block';
+  $('#colCnt').textContent=t.cols.length;
+  $('#fieldList').innerHTML=t.cols.map(function(c){
+    var dot=c.type==='number'?'var(--accent)':c.type==='date'?'#8b5cf6':'var(--ok)';
+    return '<div class="field" data-col="'+esc(c.name)+'"><span class="dot" style="background:'+dot+'"></span>'+
+      '<span class="nm">'+esc(c.name)+'</span>'+
+      '<span class="ty">'+(c.type==='number'?'#':c.type==='date'?'date':'abc')+'</span></div>';
+  }).join('');
+  $$('#fieldList .field').forEach(function(f){
+    f.onclick=function(){
+      var col=colMeta(f.dataset.col);
+      if(!col)return;
+      addWidget(col.role==='measure'?'kpi':'bar',{
+        dim:col.role==='dimension'?col.name:null,
+        measure:col.role==='measure'?col.name:(state.data.cols.filter(function(c){return c.role==='measure'})[0]||{}).name||null
+      });
+    };
+  });
+  renderFilters();renderPalette();
+}
+function renderPalette(){
+  var items=[
+    {k:'kpi',i:'◆'},{k:'column',i:'▮'},{k:'bar',i:'▬'},
+    {k:'line',i:'∿'},{k:'area',i:'▲'},{k:'pie',i:'●'},
+    {k:'donut',i:'○'},{k:'scatter',i:'∴'},{k:'table',i:'▤'}
+  ];
+  $('#paletteGrid').innerHTML=items.map(function(it){
+    return '<button class="pal-btn" data-kind="'+it.k+'"><span class="ico">'+it.i+'</span><span>'+it.k+'</span></button>';
+  }).join('');
+  $$('#paletteGrid .pal-btn').forEach(function(b){
+    b.onclick=function(){addWidget(b.dataset.kind)};
+  });
+}
+function renderFilters(){
+  if(!state.data){$('#filterList').innerHTML='';return}
+  var dims=state.data.cols.filter(function(c){return c.role==='dimension'&&c.uniq<=50});
+  var html='';
+  dims.slice(0,10).forEach(function(c){
+    var set=state.filters.values[c.name]||new Set();
+    var counts={};
+    state.data.rows.forEach(function(r){
+      var k=String(r[c.name]==null?'':r[c.name]);
+      counts[k]=(counts[k]||0)+1;
+    });
+    var entries=Object.keys(counts).map(function(k){return[k,counts[k]]});
+    entries.sort(function(a,b){return b[1]-a[1]});
+    entries=entries.slice(0,30);
+    html+='<div class="sec"><div class="sec-h">'+esc(trunc(c.name,18))+
+      (set.size?' <span class="cnt">'+set.size+'</span>':'')+'</div>';
+    entries.forEach(function(e){
+      html+='<label style="display:flex;align-items:center;gap:6px;padding:4px 6px;font-size:11px;cursor:pointer;border-radius:5px"><input type="checkbox" data-fcol="'+esc(c.name)+'" value="'+esc(e[0])+'" '+(set.has(e[0])?'checked':'')+' style="accent-color:var(--accent)"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(e[0]||'(blank)')+'</span><span style="font-size:9px;color:var(--muted)">'+e[1]+'</span></label>';
+    });
+    html+='</div>';
+  });
+  $('#filterList').innerHTML=html;
+  $$('#filterList input[type=checkbox]').forEach(function(cb){
+    cb.onchange=function(){
+      var col=cb.dataset.fcol;
+      if(!state.filters.values[col])state.filters.values[col]=new Set();
+      var s=state.filters.values[col];
+      if(cb.checked)s.add(cb.value);
+      else s['delete'](cb.value);
+      if(!s.size)delete state.filters.values[col];
+      render();
+    };
+  });
+}
+
+function addWidget(kind,overrides){
+  overrides=overrides||{};
+  if(!state.data){toast('Load data first','error');return}
+  var maxY=state.widgets.reduce(function(m,w){return Math.max(m,w.y+w.h)},0);
+  var w=Object.assign(defaultWidget(kind,0,maxY),overrides);
+  pushUndo();
+  state.widgets.push(w);
+  state.selected=[w.id];
+  render();renderInspector();
+  toast('Added '+kind,'ok');
+}
+
+function snapshot(){
+  var vals={};
+  for(var k in state.filters.values){
+    var arr=[];
+    state.filters.values[k].forEach(function(v){arr.push(v)});
+    vals[k]=arr;
+  }
+  return JSON.stringify({
+    widgets:state.widgets,selected:state.selected,
+    filters:{values:vals,search:state.filters.search},
+    theme:state.theme,accent:state.accent,meta:state.meta,
+    data:state.data,sourceName:state.sourceName,
+    sheets:state.sheets,activeSheetIndex:state.activeSheetIndex
+  });
+}
+function applySnapshot(s){
+  var o=JSON.parse(s);
+  state.widgets=o.widgets||[];
+  state.selected=o.selected||[];
+  var vals={};
+  if(o.filters&&o.filters.values){
+    for(var k in o.filters.values){vals[k]=new Set(o.filters.values[k])}
+  }
+  state.filters={values:vals,search:(o.filters&&o.filters.search)||''};
+  state.theme=o.theme||'light';
+  state.accent=o.accent||'#4f46e5';
+  state.meta=o.meta||{title:'My Dashboard'};
+  state.data=o.data;
+  state.sourceName=o.sourceName||'';
+  state.sheets=o.sheets||(o.data?[o.data]:[]);
+  state.activeSheetIndex=o.activeSheetIndex||0;
+}
+function pushUndo(){
+  state.undo.push(snapshot());
+  if(state.undo.length>60)state.undo.shift();
+  state.redo.length=0;
+  updateUR();scheduleSave();
+}
+function doUndo(){
+  if(!state.undo.length)return toast('Nothing to undo');
+  state.redo.push(snapshot());
+  applySnapshot(state.undo.pop());
+  document.documentElement.dataset.theme=state.theme;
+  render();renderSidebar();renderFilters();renderInspector();updateUR();
+}
+function doRedo(){
+  if(!state.redo.length)return toast('Nothing to redo');
+  state.undo.push(snapshot());
+  applySnapshot(state.redo.pop());
+  document.documentElement.dataset.theme=state.theme;
+  render();renderSidebar();renderFilters();renderInspector();updateUR();
+}
+function updateUR(){
+  $('#btnUndo').disabled=!state.undo.length;
+  $('#btnRedo').disabled=!state.redo.length;
+}
+var saveTimer=null;
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(function(){try{localStorage.setItem(LS_KEY,snapshot())}catch(e){}},400);
+}
+
+function exportCSV(){
+  if(!state.data)return toast('No data','error');
+  var cols=state.data.cols.map(function(c){return c.name});
+  var rows=filteredRows();
+  function q(v){var s=String(v==null?'':v);return/[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+  var lines=[cols.join(',')];
+  rows.forEach(function(r){lines.push(cols.map(function(c){return q(r[c])}).join(','))});
+  download(new Blob([lines.join('\n')],{type:'text/csv'}),'data.csv');
+  toast('CSV exported','ok');
+}
+function exportJSON(){
+  var cfg={app:'Dashboard Studio',exported:new Date().toISOString(),source:state.sourceName,
+    sheets:state.sheets,activeSheetIndex:state.activeSheetIndex,widgets:state.widgets,
+    theme:state.theme,meta:state.meta};
+  download(new Blob([JSON.stringify(cfg,null,2)],{type:'application/json'}),'dashboard.json');
+  toast('JSON exported','ok');
+}
+function exportHTML(){
+  if(!state.data)return toast('No data','error');
+  var widgets=state.widgets.map(function(w){
+    var el=widgetEls.get(w.id);
+    var svg=el?el.querySelector('.wbody svg'):null;
+    return'<div style="background:#fff;border:1px solid #e2e6ee;border-radius:12px;overflow:hidden;padding:12px"><div style="font-size:12px;font-weight:650;margin-bottom:8px;color:#4f46e5">'+esc(w.title)+'</div>'+(svg?svg.outerHTML:'')+'</div>';
+  }).join('');
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(state.meta.title)+'</title><style>body{font-family:Inter,sans-serif;background:#f6f7fb;padding:24px;margin:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}h1{color:#4f46e5}</style></head><body><h1>'+esc(state.meta.title)+'</h1><div class="grid">'+widgets+'</div></body></html>';
+  download(new Blob([html],{type:'text/html'}),'dashboard.html');
+  toast('HTML exported','ok');
+}
+async function exportPNG(){
+  var canvasEl=$('#canvas');
+  var scale=2,W=canvasEl.clientWidth,H=canvasEl.scrollHeight;
+  var cv=document.createElement('canvas');
+  cv.width=W*scale;cv.height=H*scale;
+  var ctx=cv.getContext('2d');
+  ctx.scale(scale,scale);
+  var dark=state.theme==='dark';
+  ctx.fillStyle=dark?'#0a0f1e':'#f6f7fb';
+  ctx.fillRect(0,0,W,H);
+  var cr=canvasEl.getBoundingClientRect();
+  for(var wi=0;wi<state.widgets.length;wi++){
+    var w=state.widgets[wi];
+    var el=widgetEls.get(w.id);
+    if(!el)continue;
+    var r=el.getBoundingClientRect();
+    var x=r.left-cr.left,y=r.top-cr.top,ww=r.width,hh=r.height;
+    ctx.fillStyle=dark?'#111a2e':'#fff';
+    ctx.strokeStyle=dark?'#243250':'#e2e6ee';
+    ctx.beginPath();ctx.roundRect(x,y,ww,hh,12);
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle=dark?'#e6ebf5':'#0f172a';
+    ctx.font='600 11px Inter,sans-serif';
+    ctx.fillText(w.title,x+10,y+21);
+    var svg=el.querySelector('.wbody svg');
+    if(svg){
+      try{
+        var clone=svg.cloneNode(true);
+        var sb=svg.getBoundingClientRect();
+        clone.setAttribute('width',sb.width||300);
+        clone.setAttribute('height',sb.height||150);
+        clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+        var str=new XMLSerializer().serializeToString(clone);
+        var img=await new Promise(function(res,rej){
+          var im=new Image();
+          im.onload=function(){res(im)};
+          im.onerror=rej;
+          im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(str);
+        });
+        ctx.drawImage(img,x+8,y+32,ww-16,hh-40);
+      }catch(e){}
+    }
+  }
+  cv.toBlob(function(b){download(b,'dashboard.png')});
+  toast('PNG exported','ok');
+}
+
+async function exportExcel(){
+  if(!state.data)return toast('Load data first','error');
+  if(typeof ExcelJS==='undefined')return toast('ExcelJS not loaded','error');
+  loading(true);
+  try{
+    var wb=new ExcelJS.Workbook();
+    wb.creator='Dashboard Studio';
+    wb.created=new Date();
+    var rows=filteredRows();
+    var cols=state.data.cols;
+    var N=rows.length;
+    var D0=2,D1=N+1;
+    var dataWs=wb.addWorksheet('Data',{views:[{state:'frozen',ySplit:1}]});
+    dataWs.addRow(cols.map(function(c){return c.name}));
+    var hdr=dataWs.getRow(1);
+    hdr.height=24;
+    hdr.eachCell(function(cell){
+      cell.font={bold:true,color:{argb:'FFFFFFFF'},size:11};
+      cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF4F46E5'}};
+      cell.alignment={vertical:'middle',horizontal:'center'};
+    });
+    rows.forEach(function(r){
+      dataWs.addRow(cols.map(function(c){
+        var v=r[c.name];
+        if(c.type==='number'){var n=toNumber(v);return isNaN(n)?null:n}
+        return v;
+      }));
+    });
+    cols.forEach(function(c,i){
+      var col=dataWs.getColumn(i+1);
+      col.width=Math.max(12,Math.min(28,c.name.length+4));
+      if(c.type==='number')col.numFmt=c.fmt==='currency'?'"$"#,##0.00':'#,##0.00';
+    });
+    var dashWs=wb.addWorksheet('Dashboard',{views:[{showGridLines:false}]});
+    for(var ci=1;ci<=32;ci++)dashWs.getColumn(ci).width=11;
+    dashWs.mergeCells('B2:AE2');
+    var titleCell=dashWs.getCell('B2');
+    titleCell.value=state.meta.title||'Dashboard';
+    titleCell.font={bold:true,size:24,color:{argb:'FF4F46E5'}};
+    dashWs.getRow(2).height=36;
+    dashWs.mergeCells('B3:AE3');
+    dashWs.getCell('B3').value=state.sourceName+' · '+N.toLocaleString()+' rows · '+new Date().toLocaleString();
+    dashWs.getCell('B3').font={size:10,color:{argb:'FF64748B'}};
+    dashWs.getRow(3).height=18;
+    var firstMeas=null;
+    for(var mi=0;mi<cols.length;mi++){if(cols[mi].type==='number'){firstMeas=cols[mi];break}}
+    var firstMeasL=firstMeas?colLetter(cols.indexOf(firstMeas)+1):null;
+    var kpis=[];
+    if(firstMeas&&firstMeasL){
+      kpis.push({label:'Total '+firstMeas.name,formula:'SUM(Data!'+firstMeasL+D0+':'+firstMeasL+D1+')',color:'FF4F46E5'});
+      kpis.push({label:'Avg '+firstMeas.name,formula:'AVERAGE(Data!'+firstMeasL+D0+':'+firstMeasL+D1+')',color:'FF0EA5E9'});
+      kpis.push({label:'Max '+firstMeas.name,formula:'MAX(Data!'+firstMeasL+D0+':'+firstMeasL+D1+')',color:'FF10B981'});
+      kpis.push({label:'Min '+firstMeas.name,formula:'MIN(Data!'+firstMeasL+D0+':'+firstMeasL+D1+')',color:'FFF59E0B'});
+    }
+    kpis.push({label:'Records',formula:'COUNTA(Data!A'+D0+':A'+D1+')',color:'FF8B5CF6'});
+    kpis.forEach(function(kpi,i){
+      var baseCol=2+i*3;
+      dashWs.getCell(5,baseCol).value=kpi.label;
+      dashWs.getCell(5,baseCol).font={size:9,bold:true,color:{argb:'FF64748B'}};
+      dashWs.getCell(5,baseCol).alignment={horizontal:'center'};
+      dashWs.mergeCells(6,baseCol,7,baseCol+1);
+      var valCell=dashWs.getCell(6,baseCol);
+      valCell.value={formula:kpi.formula};
+      valCell.font={bold:true,size:22,color:{argb:kpi.color}};
+      valCell.numFmt='#,##0.00';
+      valCell.alignment={horizontal:'center',vertical:'middle'};
+      valCell.border={top:{style:'thin',color:{argb:'FFE2E6EE'}},bottom:{style:'thin',color:{argb:'FFE2E6EE'}},left:{style:'thin',color:{argb:'FFE2E6EE'}},right:{style:'thin',color:{argb:'FFE2E6EE'}}};
+      valCell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF8F9FF'}};
+    });
+    dashWs.getRow(6).height=30;
+    dashWs.getRow(7).height=30;
+    var chartWidgets=state.widgets.filter(function(w){return w.kind!=='text'&&w.kind!=='table'});
+    var exportedNative=0,fallbacks=[];
+    var chartRow=9,chartCol=2,chartsThisRow=0;
+    var PER_ROW=2,CHART_W=12,CHART_H=18;
+    for(var wi2=0;wi2<chartWidgets.length;wi2++){
+      var w=chartWidgets[wi2];
+      var cd=chartDataFor(w);
+      if(!cd.data||!cd.data.length)continue;
+      var cdWs=wb.addWorksheet('CD'+(wi2+1),{state:'hidden'});
+      cdWs.getColumn(1).width=22;
+      cdWs.getColumn(2).width=14;
+      var cdHdr=cdWs.addRow([w.dim||'Category',w.measure||'Value']);
+      cdHdr.eachCell(function(c){
+        c.font={bold:true,color:{argb:'FFFFFFFF'},size:10};
+        c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF4F46E5'}};
+      });
+      cd.data.forEach(function(d){
+        cdWs.addRow([d.label,Math.round(d.value*100)/100]);
+      });
+      cdWs.getColumn(2).numFmt='#,##0.00';
+      if(exportedNative>=20){
+        fallbacks.push({title:w.title,sheet:'CD'+(wi2+1),reason:'max charts reached'});
+        continue;
+      }
+      try{
+        var chartType=w.kind;
+        if(chartType==='line'||chartType==='area')chartType=chartType;
+        else if(chartType==='pie')chartType='pie';
+        else if(chartType==='donut')chartType='doughnut';
+        else if(chartType==='scatter')chartType='scatter';
+        else if(chartType==='bar')chartType='bar';
+        else chartType='column';
+        var chart=wb.addChart(chartType,{
+          title:{name:w.title,color:{argb:'FF0F172A'},bold:true,size:13},
+          series:[{
+            name:w.measure||w.dim||'Value',
+            labels:'CD'+(wi2+1)+'!$A$2:$A$'+(cd.data.length+1),
+            values:'CD'+(wi2+1)+'!$B$2:$B$'+(cd.data.length+1)
+          }],
+          legend:{position:'b'}
+        });
+        if(chartType==='column'||chartType==='bar'){
+          if(typeof chart.setBarDirection==='function')chart.setBarDirection(chartType==='bar'?'bar':'col');
+          else chart.barDir=chartType==='bar'?'bar':'col';
+          if(typeof chart.setGrouping==='function')chart.setGrouping('clustered');
+          else chart.grouping='clustered';
+        }
+        if(chartType==='doughnut'){
+          if(typeof chart.setHoleSize==='function')chart.setHoleSize(55);
+          else chart.holeSize=55;
+        }
+        var range=colLetter(chartCol)+chartRow+':'+colLetter(chartCol+CHART_W-1)+(chartRow+CHART_H-1);
+        dashWs.addChart(chart,range);
+        exportedNative++;
+        chartsThisRow++;
+        chartCol+=CHART_W+1;
+        if(chartsThisRow>=PER_ROW){
+          chartsThisRow=0;chartCol=2;chartRow+=CHART_H+1;
+        }
+      }catch(e){
+        console.warn('Chart fail:',w.title,e.message);
+        fallbacks.push({title:w.title,sheet:'CD'+(wi2+1),reason:e.message});
+      }
+    }
+    var manifestWs=wb.addWorksheet('Manifest');
+    manifestWs.getColumn(1).width=30;
+    manifestWs.getColumn(2).width=18;
+    manifestWs.getColumn(3).width=50;
+    [
+      ['Dashboard Studio Export'],
+      ['Generated',new Date().toISOString()],
+      ['Source',state.sourceName],
+      ['Rows',N],
+      ['Widgets',state.widgets.length],
+      ['Native charts',exportedNative],
+      ['Fallbacks',fallbacks.length],
+      [''],
+      ['Feature','Status','Notes'],
+      ['Data sheet','Native','Filtered rows with styled header'],
+      ['Dashboard sheet','Native','KPI cards with live formulas + charts'],
+      ['Live formulas','Native','SUM/AVERAGE/MAX/MIN/COUNTA']
+    ].forEach(function(row){manifestWs.addRow(row)});
+    if(fallbacks.length){
+      manifestWs.addRow(['']);
+      manifestWs.addRow(['Fallbacks','','Build manually via Insert > Chart']);
+      fallbacks.forEach(function(f){manifestWs.addRow([f.title,f.sheet,f.reason])});
+    }
+    manifestWs.getRow(1).font={bold:true,size:15,color:{argb:'FF4F46E5'}};
+    var buf=await wb.xlsx.writeBuffer();
+    download(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'dashboard.xlsx');
+    toast('Exported '+exportedNative+' native charts + '+N+' rows','ok');
+  }catch(e){
+    console.error(e);
+    toast('Export failed: '+e.message,'error');
+  }
+  loading(false);
+}
+
+function openConfig(){
+  if(!state.sheets||!state.sheets.length){
+    toast('Load data first','error');
+    return;
+  }
+  var sheetSelect=$('#cfgSheet');
+  sheetSelect.innerHTML=state.sheets.map(function(s,i){
+    return'<option value="'+i+'" '+(i===state.activeSheetIndex?'selected':'')+'>'+esc(s.name)+' ('+s.rows.length+' rows)</option>';
+  }).join('');
+  var cur=state.sheets[state.activeSheetIndex];
+  $('#cfgRowFrom').value=1;
+  $('#cfgRowTo').value=cur.rows.length;
+  $('#cfgRowTotal').textContent=cur.rows.length;
+  $('#cfgRowFrom').max=cur.rows.length;
+  $('#cfgRowTo').max=cur.rows.length;
+  renderColChecks(cur.cols);
+  renderChartChecks();
+  sheetSelect.onchange=function(){
+    var idx=parseInt(sheetSelect.value);
+    var s=state.sheets[idx];
+    $('#cfgRowFrom').value=1;
+    $('#cfgRowTo').value=s.rows.length;
+    $('#cfgRowTotal').textContent=s.rows.length;
+    $('#cfgRowFrom').max=s.rows.length;
+    $('#cfgRowTo').max=s.rows.length;
+    renderColChecks(s.cols);
+  };
+  $('#configModal').classList.add('show');
+}
+function closeConfig(){
+  $('#configModal').classList.remove('show');
+}
+function renderColChecks(cols){
+  $('#cfgColumns').innerHTML=cols.map(function(c){
+    var tagCls=c.type==='date'?'date':c.role==='measure'?'measure':'dimension';
+    var tagTxt=c.type==='date'?'date':c.role==='measure'?'measure':'dim';
+    return'<label class="cfg-item"><input type="checkbox" data-col="'+esc(c.name)+'" checked>'+
+      '<span class="lbl">'+esc(c.name)+'</span>'+
+      '<span class="tag '+tagCls+'">'+tagTxt+'</span></label>';
+  }).join('');
+}
+function renderChartChecks(){
+  $('#cfgCharts').innerHTML=CHART_TYPES.map(function(c){
+    return'<label class="cfg-item"><input type="checkbox" data-chart="'+c.id+'" checked>'+
+      '<span class="lbl">'+esc(c.name)+'</span>'+
+      (c.core?'<span class="tag core">core</span>':'')+'</label>';
+  }).join('');
+}
+function selectAllCols(){
+  $$('#cfgColumns input[type=checkbox]').forEach(function(cb){cb.checked=true});
+}
+function selectNoneCols(){
+  $$('#cfgColumns input[type=checkbox]').forEach(function(cb){cb.checked=false});
+}
+function selectMeasuresOnly(){
+  var sheet=state.sheets[parseInt($('#cfgSheet').value)];
+  $$('#cfgColumns input[type=checkbox]').forEach(function(cb){
+    var col=sheet.cols.filter(function(c){return c.name===cb.dataset.col})[0];
+    cb.checked=col&&col.role==='measure';
+  });
+}
+function selectDimsOnly(){
+  var sheet=state.sheets[parseInt($('#cfgSheet').value)];
+  $$('#cfgColumns input[type=checkbox]').forEach(function(cb){
+    var col=sheet.cols.filter(function(c){return c.name===cb.dataset.col})[0];
+    cb.checked=col&&col.role==='dimension';
+  });
+}
+function selectAllCharts(){
+  $$('#cfgCharts input[type=checkbox]').forEach(function(cb){cb.checked=true});
+}
+function selectNoneCharts(){
+  $$('#cfgCharts input[type=checkbox]').forEach(function(cb){cb.checked=false});
+}
+function selectEssentialCharts(){
+  var essential=['kpi','column','line','pie','table'];
+  $$('#cfgCharts input[type=checkbox]').forEach(function(cb){
+    cb.checked=essential.indexOf(cb.dataset.chart)>=0;
+  });
+}
+
+function buildFromConfig(){
+  var sheetIdx=parseInt($('#cfgSheet').value);
+  var rowFrom=parseInt($('#cfgRowFrom').value)-1;
+  var rowTo=parseInt($('#cfgRowTo').value)-1;
+  if(rowFrom<0)rowFrom=0;
+  if(rowTo<rowFrom)rowTo=rowFrom;
+  var selCols=$$('#cfgColumns input:checked').map(function(cb){return cb.dataset.col});
+  var selCharts=$$('#cfgCharts input:checked').map(function(cb){return cb.dataset.chart});
+  if(!selCols.length){toast('Select at least one column','error');return}
+  if(!selCharts.length){toast('Select at least one chart type','error');return}
+  var sheet=state.sheets[sheetIdx];
+  if(!sheet){toast('Sheet not found','error');return}
+  var subRows=sheet.rows.slice(rowFrom,rowTo+1);
+  var subCols=sheet.cols.filter(function(c){return selCols.indexOf(c.name)>=0});
+  state.data={name:sheet.name,cols:subCols,rows:subRows};
+  state.activeSheetIndex=sheetIdx;
+  state.sourceName=sheet.name;
+  state.widgets=[];state.selected=[];
+  var dims=subCols.filter(function(c){return c.role==='dimension'});
+  var meas=subCols.filter(function(c){return c.role==='measure'});
+  var dates=dims.filter(function(c){return c.type==='date'});
+  var cats=dims.filter(function(c){return c.type!=='date'});
+  var y=0;
+  var hasKpi=selCharts.indexOf('kpi')>=0;
+  var hasCol=selCharts.indexOf('column')>=0;
+  var hasBar=selCharts.indexOf('bar')>=0;
+  var hasLine=selCharts.indexOf('line')>=0;
+  var hasArea=selCharts.indexOf('area')>=0;
+  var hasPie=selCharts.indexOf('pie')>=0;
+  var hasDonut=selCharts.indexOf('donut')>=0;
+  var hasScatter=selCharts.indexOf('scatter')>=0;
+  var hasTable=selCharts.indexOf('table')>=0;
+  if(hasKpi&&meas.length){
+    var kpis=meas.slice(0,4);
+    kpis.forEach(function(m,i){
+      state.widgets.push({
+        id:uid(),kind:'kpi',title:m.name,measure:m.name,dim:dates[0]?dates[0].name:(cats[0]?cats[0].name:null),
+        agg:'sum',color:PAL[i%PAL.length],x:i*3,y:0,w:3,h:3
+      });
+    });
+    y=3;
+  }
+  if((hasLine||hasArea)&&dates.length&&meas.length){
+    var trendDim=dates[0].name;
+    var trendMeas=meas[0].name;
+    if(hasLine&&hasArea){
+      state.widgets.push({id:uid(),kind:'line',title:trendMeas+' over '+trendDim,
+        dim:trendDim,measure:trendMeas,agg:'sum',color:PAL[0],x:0,y:y,w:6,h:6});
+      state.widgets.push({id:uid(),kind:'area',title:trendMeas+' trend',
+        dim:trendDim,measure:trendMeas,agg:'sum',color:PAL[1],x:6,y:y,w:6,h:6});
+      y+=6;
+    }else if(hasLine){
+      state.widgets.push({id:uid(),kind:'line',title:trendMeas+' over '+trendDim,
+        dim:trendDim,measure:trendMeas,agg:'sum',color:PAL[0],x:0,y:y,w:12,h:6});
+      y+=6;
+    }else if(hasArea){
+      state.widgets.push({id:uid(),kind:'area',title:trendMeas+' over '+trendDim,
+        dim:trendDim,measure:trendMeas,agg:'sum',color:PAL[0],x:0,y:y,w:12,h:6});
+      y+=6;
+    }
+  }
+  if((hasPie||hasDonut)&&cats.length&&meas.length){
+    var catDim=cats[0].name;
+    var catMeas=meas[0].name;
+    if(hasPie&&hasDonut){
+      state.widgets.push({id:uid(),kind:'pie',title:catMeas+' by '+catDim,
+        dim:catDim,measure:catMeas,agg:'sum',color:PAL[2],x:0,y:y,w:4,h:6});
+      state.widgets.push({id:uid(),kind:'donut',title:catMeas+' share',
+        dim:catDim,measure:catMeas,agg:'sum',color:PAL[3],x:4,y:y,w:4,h:6});
+      if(hasCol){
+        state.widgets.push({id:uid(),kind:'column',title:catMeas+' by '+catDim,
+          dim:catDim,measure:catMeas,agg:'sum',color:PAL[4],x:8,y:y,w:4,h:6});
+      }
+      y+=6;
+    }else if(hasPie){
+      state.widgets.push({id:uid(),kind:'pie',title:catMeas+' by '+catDim,
+        dim:catDim,measure:catMeas,agg:'sum',color:PAL[2],x:0,y:y,w:6,h:6});
+      if(hasCol){
+        state.widgets.push({id:uid(),kind:'column',title:catMeas+' by '+catDim,
+          dim:catDim,measure:catMeas,agg:'sum',color:PAL[4],x:6,y:y,w:6,h:6});
+      }
+      y+=6;
+    }else if(hasDonut){
+      state.widgets.push({id:uid(),kind:'donut',title:catMeas+' by '+catDim,
+        dim:catDim,measure:catMeas,agg:'sum',color:PAL[3],x:0,y:y,w:6,h:6});
+      if(hasCol){
+        state.widgets.push({id:uid(),kind:'column',title:catMeas+' by '+catDim,
+          dim:catDim,measure:catMeas,agg:'sum',color:PAL[4],x:6,y:y,w:6,h:6});
+      }
+      y+=6;
+    }
+  }
+  if(hasBar&&cats.length&&meas.length){
+    var barDim=cats[0].name;
+    var barsToMake=Math.min(meas.length,2);
+    for(var bi=0;bi<barsToMake;bi++){
+      state.widgets.push({id:uid(),kind:'bar',
+        title:meas[bi].name+' by '+barDim,
+        dim:barDim,measure:meas[bi].name,agg:'sum',
+        color:PAL[(5+bi)%PAL.length],x:bi*6,y:y,w:6,h:5});
+    }
+    if(barsToMake)y+=5;
+  }
+  if(hasCol&&cats.length>1&&meas.length){
+    var colDim=cats[1].name;
+    var colsToMake=Math.min(2,meas.length);
+    for(var cci=0;cci<colsToMake;cci++){
+      state.widgets.push({id:uid(),kind:'column',
+        title:meas[cci].name+' by '+colDim,
+        dim:colDim,measure:meas[cci].name,agg:'sum',
+        color:PAL[(7+cci)%PAL.length],x:cci*6,y:y,w:6,h:5});
+    }
+    if(colsToMake)y+=5;
+  }
+  if(hasScatter&&meas.length>=2){
+    state.widgets.push({id:uid(),kind:'scatter',
+      title:meas[0].name+' vs '+meas[1].name,
+      dim:meas[0].name,measure:meas[1].name,agg:'sum',
+      color:PAL[0],x:0,y:y,w:6,h:5});
+    y+=5;
+  }
+  if(hasTable){
+    state.widgets.push({id:uid(),kind:'table',title:'Detail table',x:0,y:y,w:12,h:7});
+    y+=7;
+  }
+  closeConfig();
+  render();renderInspector();renderSidebar();renderFilters();
+  toast('Built '+state.widgets.length+' widgets','ok');
+}
+
+var CMD={};
+function cmd(id,label,cat,run,keys){CMD[id]={label:label,cat:cat,run:run,keys:keys}}
+cmd('undo','Undo','Core',doUndo,'Ctrl+Z');
+cmd('redo','Redo','Core',doRedo,'Ctrl+Shift+Z');
+cmd('save','Save','Core',function(){try{localStorage.setItem(LS_KEY,snapshot());toast('Saved','ok')}catch(e){}},'Ctrl+S');
+cmd('sample','Load sample data','Data',sampleData);
+cmd('file','Import file','Data',function(){$('#fileInput').click()});
+cmd('auto-build','Auto-build (configure)','Data',openConfig);
+cmd('theme','Toggle theme','Core',function(){
+  state.theme=state.theme==='light'?'dark':'light';
+  document.documentElement.dataset.theme=state.theme;
+  $('#btnTheme').textContent=state.theme==='light'?'🌙':'☀️';
+  render();
+});
+cmd('excel','Export Excel','Export',exportExcel);
+cmd('csv','Export CSV','Export',exportCSV);
+cmd('json','Export JSON','Export',exportJSON);
+cmd('html','Export HTML','Export',exportHTML);
+cmd('png','Export PNG','Export',exportPNG);
+cmd('print','Print','Export',function(){window.print()});
+
+var palIdx=0,palFiltered=[];
+function openPalette(){
+  $('#paletteModal').classList.add('show');
+  $('#paletteInput').value='';
+  $('#paletteInput').focus();
+  renderPalList('');
+}
+function closePalette(){$('#paletteModal').classList.remove('show')}
+function renderPalList(q){
+  var all=[];
+  for(var k in CMD)all.push(Object.assign({id:k},CMD[k]));
+  palFiltered=all.filter(function(c){
+    return!q||c.label.toLowerCase().indexOf(q.toLowerCase())>=0||c.cat.toLowerCase().indexOf(q.toLowerCase())>=0;
+  });
+  palIdx=0;
+  $('#paletteList').innerHTML=palFiltered.slice(0,30).map(function(c,i){
+    return'<div class="palette-item '+(i===palIdx?'active':'')+'" data-cmd="'+c.id+'">'+
+      '<span class="cat">'+esc(c.cat)+'</span>'+
+      '<span class="lbl">'+esc(c.label)+'</span></div>';
+  }).join('')||'<div style="padding:16px;color:var(--muted);font-size:12px">No matches</div>';
+  $$('.palette-item').forEach(function(el){
+    el.onclick=function(){
+      var c=CMD[el.dataset.cmd];
+      if(c){closePalette();c.run()}
+    };
+  });
+}
+function palKeydown(e){
+  if(e.key==='ArrowDown'){
+    e.preventDefault();
+    palIdx=Math.min(palIdx+1,palFiltered.length-1);
+    $$('.palette-item').forEach(function(el,i){el.classList.toggle('active',i===palIdx)});
+  }
+  if(e.key==='ArrowUp'){
+    e.preventDefault();
+    palIdx=Math.max(0,palIdx-1);
+    $$('.palette-item').forEach(function(el,i){el.classList.toggle('active',i===palIdx)});
+  }
+  if(e.key==='Enter'){
+    e.preventDefault();
+    var c=palFiltered[palIdx];
+    if(c){closePalette();c.run()}
+  }
+  if(e.key==='Escape')closePalette();
+}
+
+function init(){
+  document.documentElement.dataset.theme=state.theme;
+  $('#btnAutoBuild').onclick=openConfig;
+  $('#btnSample').onclick=sampleData;
+  $('#btnUndo').onclick=doUndo;
+  $('#btnRedo').onclick=doRedo;
+  $('#btnPalette').onclick=openPalette;
+  $('#btnTheme').onclick=function(){CMD.theme.run()};
+  $('#btnSave').onclick=function(){CMD.save.run()};
+  $('#dashTitle').oninput=function(e){state.meta.title=e.target.value;scheduleSave()};
+  $('#btnExport').onclick=function(e){
+    e.stopPropagation();
+    var m=$('#exportMenu');
+    m.style.display=m.style.display==='flex'?'none':'flex';
+  };
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('#btnExport')&&!e.target.closest('#exportMenu')){
+      $('#exportMenu').style.display='none';
+    }
+  });
+  $$('.export-item').forEach(function(item){
+    item.addEventListener('mouseenter',function(){this.style.background='var(--accent-soft)'});
+    item.addEventListener('mouseleave',function(){this.style.background=''});
+    item.onclick=function(e){
+      e.stopPropagation();
+      $('#exportMenu').style.display='none';
+      var v=this.dataset.exp;
+      if(v==='xlsx')exportExcel();
+      else if(v==='csv')exportCSV();
+      else if(v==='json')exportJSON();
+      else if(v==='html')exportHTML();
+      else if(v==='png')exportPNG();
+      else if(v==='print')window.print();
+    };
+  });
+  $('#btnHelp').onclick=function(){
+    var h=$('#helpBody');
+    var html='';
+    Object.keys(CMD).filter(function(k){return CMD[k].keys}).forEach(function(k){
+      html+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border)"><span>'+esc(CMD[k].label)+'</span><kbd style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:10.5px">'+esc(CMD[k].keys)+'</kbd></div>';
+    });
+    h.innerHTML=html;
+    $('#helpModal').classList.add('show');
+  };
+  $('#fileInput').onchange=function(e){
+    loadFiles(Array.prototype.slice.call(e.target.files));
+    e.target.value='';
+  };
+  $('#btnPaste').onclick=async function(){
+    try{
+      var t=await navigator.clipboard.readText();
+      if(!t)return;
+      var aoa=parseDelim(t,detectDelim(t));
+      setSheets([buildTable('pasted',aoa)],'pasted.csv');
+      toast('Pasted','ok');
+    }catch(e){toast('Paste failed','error')}
+  };
+  $$('.tab').forEach(function(t){
+    t.onclick=function(){
+      $$('.tab').forEach(function(x){x.classList.toggle('active',x===t)});
+      $$('.panel').forEach(function(p){p.classList.toggle('active',p.id==='panel-'+t.dataset.tab)});
+    };
+  });
+  $('#globalSearch').oninput=function(e){
+    state.filters.search=e.target.value;
+    renderFilters();render();
+  };
+  $('#paletteInput').addEventListener('input',function(e){renderPalList(e.target.value)});
+  $('#paletteInput').addEventListener('keydown',palKeydown);
+  $('#paletteModal').addEventListener('click',function(e){if(e.target===$('#paletteModal'))closePalette()});
+  $$('.overlay').forEach(function(ov){
+    ov.addEventListener('click',function(e){
+      if(e.target===ov)ov.classList.remove('show');
+    });
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.target.matches('input,textarea,select')){
+      if(e.key==='Escape'&&e.target.id!=='paletteInput')e.target.blur();
+      return;
+    }
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openPalette();return}
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!e.shiftKey){e.preventDefault();doUndo();return}
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&e.shiftKey){e.preventDefault();doRedo();return}
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();CMD.save.run();return}
+    if(e.key==='Delete'||e.key==='Backspace'){
+      if(state.selected.length){
+        pushUndo();
+        state.widgets=state.widgets.filter(function(w){return state.selected.indexOf(w.id)<0});
+        state.selected=[];render();renderInspector();
+      }
+    }
+    if(e.key==='Escape'){state.selected=[];render();renderInspector()}
+  });
+  try{
+    var raw=localStorage.getItem(LS_KEY);
+    if(raw){
+      applySnapshot(raw);
+      document.documentElement.dataset.theme=state.theme;
+      $('#btnTheme').textContent=state.theme==='light'?'🌙':'☀️';
+      $('#dashTitle').value=state.meta.title||'My Dashboard';
+    }
+  }catch(e){}
+  render();renderSidebar();renderFilters();renderInspector();
+  updateUR();
+  console.log('Dashboard Studio ready. ExcelJS:',typeof ExcelJS!=='undefined');
+}
+
+window.DashboardStudio={
+  closeConfig:closeConfig,
+  buildFromConfig:buildFromConfig,
+  selectAllCols:selectAllCols,
+  selectNoneCols:selectNoneCols,
+  selectMeasuresOnly:selectMeasuresOnly,
+  selectDimsOnly:selectDimsOnly,
+  selectAllCharts:selectAllCharts,
+  selectNoneCharts:selectNoneCharts,
+  selectEssentialCharts:selectEssentialCharts
+};
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
+else init();
+
+})();
+</script>
+</body>
+</html>

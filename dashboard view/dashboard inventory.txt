@@ -1,0 +1,249 @@
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.chart import BarChart, PieChart, LineChart, Reference
+from openpyxl.utils import get_column_letter
+from google.colab import files
+
+# Create workbook and setup sheets
+wb = openpyxl.Workbook()
+
+# 1. Raw Data Sheet
+ws_data = wb.active
+ws_data.title = "Data"
+
+headers = ["Product ID","Product Name","Category","Opening Stock","Purchase/Stock in",
+           "Units Sold","Hand-In-Stock","Cost Price Per Unit (USD)","Cost Price Total (USD)","Sell-Through Rate"]
+ws_data.append(headers)
+
+data = [
+("P101","Laptop","Computing",50,20,10,60,1200,72000),
+("P102","Monitor","Monitors",40,15,5,50,500,25000),
+("P103","Keyboard","Peripherals",60,25,15,70,50,3500),
+("P104","Headphones","Audio",30,10,3,37,100,3700),
+("P105","Smartphone","Computing",70,30,20,80,900,72000),
+("P106","Tablet","Computing",45,18,8,55,700,38500),
+("P107","Router","Networking",55,22,12,65,150,9750),
+("P108","External Hard Drive","Storage",25,12,5,32,200,6400),
+("P109","Wireless Earbuds","Audio",35,15,7,43,80,3440),
+("P110","Webcam","Peripherals",40,20,10,50,60,3000),
+("P111","Desk Chair","Furniture",20,8,3,25,150,3750),
+("P112","Desk Lamp","Furniture",30,15,7,38,30,1140),
+("P113","USB Flash Drive","Storage",50,25,12,63,20,1260),
+("P114","Ethernet Cable","Networking",60,30,15,75,10,750),
+("P115","Power Strip","Accessories",40,20,8,52,25,1300),
+("P116","Wireless Mouse","Peripherals",35,15,5,45,40,1800),
+("P117","Gaming Keyboard","Gaming",25,10,4,31,100,3100),
+("P118","Gaming Mouse","Gaming",30,12,6,36,80,2880),
+("P119","Gaming Headset","Gaming",20,8,3,25,120,3000),
+("P120","Gaming Chair","Gaming",15,6,2,19,200,3800),
+("P121","Gaming Monitor","Gaming",25,10,4,29,400,11600),
+("P122","Graphics Card","Components",40,18,9,49,600,29400),
+("P123","CPU","Components",30,15,7,38,350,13300),
+("P124","Motherboard","Components",25,12,5,32,200,6400),
+("P125","RAM","Components",50,22,11,61,80,4880),
+("P126","SSD","Storage",45,20,8,57,120,6840),
+("P127","HDD","Storage",60,25,12,73,60,4380),
+("P128","Power Supply","Components",35,15,6,44,100,4400),
+("P129","PC Case","Components",40,18,9,49,80,3920),
+("P130","CPU Cooler","Components",30,12,4,34,50,1700),
+("P131","Monitor Stand","Accessories",25,10,3,28,30,840),
+("P132","Mouse Pad","Accessories",50,20,8,58,10,580),
+("P133","Thermal Paste","Accessories",40,15,5,50,5,250),
+("P134","Cable Management Kit","Accessories",30,12,4,34,15,510),
+("P135","WiFi Adapter","Networking",20,8,3,23,20,460),
+("P136","External DVD Drive","Storage",15,6,2,17,50,850),
+("P137","Printer Cable","Accessories",25,10,4,29,5,145),
+("P138","Keyboard Cleaner","Accessories",40,18,9,49,8,392),
+("P139","Laptop Cooling Pad","Accessories",30,15,6,39,20,780),
+("P140","USB Hub","Accessories",35,12,4,31,15,465),
+("P141","Anti-Glare Screen Protector","Accessories",25,8,3,28,10,280),
+("P142","USB-C Adapter","Accessories",20,10,4,24,15,360),
+("P143","Laptop Sleeve","Accessories",30,12,5,37,20,740),
+("P144","Wireless Charger","Accessories",40,18,7,51,30,1530),
+("P145","USB-C Cable","Accessories",50,20,9,61,8,488),
+("P146","Gaming Desk","Gaming",25,10,3,28,150,4200),
+]
+
+for row in data:
+    ws_data.append(row)
+
+last_row = len(data)+1
+for i in range(2, last_row+1):
+    ws_data.cell(row=i, column=10, value=f"=F{i}/(D{i}+E{i})").number_format = '0.0%'
+
+# Header Styles
+hdr_fill = PatternFill("solid", fgColor="1F4E78")
+hdr_font = Font(color="FFFFFF", bold=True)
+for c in range(1, 11):
+    cell = ws_data.cell(row=1, column=c)
+    cell.fill = hdr_fill
+    cell.font = hdr_font
+    cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+for i, w in enumerate([10,22,15,12,15,12,15,18,20,15], start=1):
+    ws_data.column_dimensions[get_column_letter(i)].width = w
+ws_data.auto_filter.ref = f"A1:J{last_row}"
+
+# 2. Main Category Analysis Sheet (Base for Charts 1-4)
+ws_an = wb.create_sheet("Analysis")
+ws_an.append(["Category","Product Count","Opening Stock","Purchases","Units Sold",
+              "Hand-In-Stock","Inventory Value","Avg Cost/Unit","Sell-Through Rate"])
+cats = ["Computing","Monitors","Peripherals","Audio","Networking","Storage",
+        "Components","Gaming","Accessories","Furniture"]
+for cat in cats:
+    ws_an.append([cat])
+
+for i, cat in enumerate(cats, start=2):
+    r = i
+    ws_an.cell(r,2, f'=COUNTIF(Data!C2:C{last_row},A{r})')
+    ws_an.cell(r,3, f'=SUMIF(Data!C2:C{last_row},A{r},Data!D2:D{last_row})')
+    ws_an.cell(r,4, f'=SUMIF(Data!C2:C{last_row},A{r},Data!E2:E{last_row})')
+    ws_an.cell(r,5, f'=SUMIF(Data!C2:C{last_row},A{r},Data!F2:F{last_row})')
+    ws_an.cell(r,6, f'=SUMIF(Data!C2:C{last_row},A{r},Data!G2:G{last_row})')
+    ws_an.cell(r,7, f'=SUMIF(Data!C2:C{last_row},A{r},Data!I2:I{last_row})')
+    ws_an.cell(r,8, f'=IF(F{r}=0,0,G{r}/F{r})').number_format = '$#,##0.00'
+    ws_an.cell(r,9, f'=IF((C{r}+D{r})=0,0,E{r}/(C{r}+D{r}))').number_format = '0.0%'
+
+tot = len(cats)+2
+ws_an.cell(tot,1,"Total")
+for c in range(2,8):
+    ws_an.cell(tot,c, f'=SUM({get_column_letter(c)}2:{get_column_letter(c)}{tot-1})')
+ws_an.cell(tot,8, f'=IF(F{tot}=0,0,G{tot}/F{tot})').number_format = '$#,##0.00'
+ws_an.cell(tot,9, f'=IF((C{tot}+D{tot})=0,0,E{tot}/(C{tot}+D{tot}))').number_format = '0.0%'
+
+for c in range(1,10):
+    cell = ws_an.cell(1,c)
+    cell.fill = hdr_fill; cell.font = hdr_font
+    cell.alignment = Alignment(horizontal="center", wrap_text=True)
+
+# 3. Pivot-Mimic / Secondary Analysis Sheet (Base for Charts 5-8)
+ws_pivot = wb.create_sheet("PivotAnalysis")
+ws_pivot.append(["Metrics Summary", "Opening Stock", "Units Sold", "In Stock Ratio", "Profit Estimate (Potential)"])
+pivot_rows = ["Audio", "Accessories", "Gaming", "Components", "Computing", "Networking"]
+for pr in pivot_rows:
+    ws_pivot.append([pr])
+
+for i, pr in enumerate(pivot_rows, start=2):
+    ws_pivot.cell(i, 2, f'=SUMIF(Data!C2:C{last_row},A{i},Data!D2:D{last_row})')
+    ws_pivot.cell(i, 3, f'=SUMIF(Data!C2:C{last_row},A{i},Data!F2:F{last_row})')
+    ws_pivot.cell(i, 4, f'=C{i}/B{i}').number_format = '0.0%'
+    ws_pivot.cell(i, 5, f'=SUMIF(Data!C2:C{last_row},A{i},Data!I2:I{last_row})*0.25').number_format = '$#,##0'
+
+for c in range(1, 6):
+    cell = ws_pivot.cell(1, c)
+    cell.fill = PatternFill("solid", fgColor="1F4E78")
+    cell.font = Font(color="FFFFFF", bold=True)
+
+# 4. Interactive & Visual Dashboard Sheet
+ws_d = wb.create_sheet("Dashboard")
+ws_d.views.sheetView[0].showGridLines = True
+
+bg_header_fill = PatternFill("solid", fgColor="1A365D")
+kpi_fill = PatternFill("solid", fgColor="F7FAFC")
+border_side = Side(style='thin', color="D2D6DC")
+kpi_border = Border(left=border_side, right=border_side, top=border_side, bottom=border_side)
+title_font = Font(size=18, bold=True, color="FFFFFF")
+kpi_num_font = Font(size=16, bold=True, color="2B6CB0")
+kpi_label_font = Font(size=9, bold=False, color="4A5568")
+
+for col_idx in range(1, 26):
+    cell = ws_d.cell(row=2, column=col_idx)
+    cell.fill = bg_header_fill
+ws_d.merge_cells("A2:Y2")
+ws_d["A2"] = "   INVENTORY MANAGEMENT REPORT & KPI METRICS (8-CHART INTERACTIVE DASHBOARD)"
+ws_d["A2"].font = title_font
+ws_d["A2"].alignment = Alignment(vertical="center")
+ws_d.row_dimensions[2].height = 40
+
+kpi_definitions = [
+    ("TOTAL PRODUCTS", f"=COUNTA(Data!A2:A{last_row})", '#,##0', "A4:B4", "A5:B5", "A4", "A5"),
+    ("TOTAL OPENING STOCK", f"=SUM(Data!D2:D{last_row})", '#,##0', "C4:D4", "C5:D5", "C4", "C5"),
+    ("TOTAL PURCHASES", f"=SUM(Data!E2:E{last_row})", '#,##0', "E4:F4", "E5:F5", "E4", "E5"),
+    ("TOTAL UNITS SOLD", f"=SUM(Data!F2:F{last_row})", '#,##0', "G4:H4", "G5:H5", "G4", "G5"),
+    ("TOTAL HAND-IN-STOCK", f"=SUM(Data!G2:G{last_row})", '#,##0', "I4:J4", "I5:J5", "I4", "I5"),
+    ("INVENTORY VALUE", f"=SUM(Data!I2:I{last_row})", '$#,##0', "K4:L4", "K5:L5", "K4", "K5"),
+    ("OVERALL SELL-THROUGH", f"=IF(SUM(Data!D2:D{last_row})+SUM(Data!E2:E{last_row})=0,0,SUM(Data!F2:F{last_row})/(SUM(Data!D2:D{last_row})+SUM(Data!E2:E{last_row})))", '0.0%', "M4:O4", "M5:O5", "M4", "M5")
+]
+
+for label, formula, num_format, lbl_range, val_range, lbl_cell_id, val_cell_id in kpi_definitions:
+    lbl_cell = ws_d[lbl_cell_id]
+    lbl_cell.value = label
+    lbl_cell.font = kpi_label_font
+    lbl_cell.alignment = Alignment(horizontal="center", vertical="bottom")
+    ws_d.merge_cells(lbl_range)
+
+    val_cell = ws_d[val_cell_id]
+    val_cell.value = formula
+    val_cell.font = kpi_num_font
+    val_cell.number_format = num_format
+    val_cell.alignment = Alignment(horizontal="center", vertical="top")
+    ws_d.merge_cells(val_range)
+
+    for rng in (lbl_range, val_range):
+        start_col, start_row, end_col, end_row = openpyxl.utils.range_boundaries(rng)
+        for r_idx in range(start_row, end_row + 1):
+            for c_idx in range(start_col, end_col + 1):
+                tgt = ws_d.cell(row=r_idx, column=c_idx)
+                tgt.fill = kpi_fill
+                tgt.border = kpi_border
+
+ws_d.row_dimensions[4].height = 20
+ws_d.row_dimensions[5].height = 28
+
+cats_ref = Reference(ws_an, min_col=1, min_row=2, max_row=len(cats)+1)
+cats_pivot_ref = Reference(ws_pivot, min_col=1, min_row=2, max_row=len(pivot_rows)+1)
+
+# --- Row 1 (Charts 1-4 from Main Category Analysis) ---
+# Chart 1: Inventory Value
+ch1 = BarChart(); ch1.type="bar"; ch1.title="Inventory Value ($)"
+data_ref = Reference(ws_an, min_col=7, min_row=1, max_row=len(cats)+1)
+ch1.add_data(data_ref, titles_from_data=True); ch1.set_categories(cats_ref)
+ch1.height = 9; ch1.width = 13; ws_d.add_chart(ch1, "A7")
+
+# Chart 2: Stock Movement (Units Sold vs Hand-In-Stock)
+ch2 = BarChart(); ch2.type="col"; ch2.grouping="clustered"; ch2.title="Stock Movement"
+data_ref2 = Reference(ws_an, min_col=5, max_col=6, min_row=1, max_row=len(cats)+1)
+ch2.add_data(data_ref2, titles_from_data=True); ch2.set_categories(cats_ref)
+ch2.height = 9; ch2.width = 13; ws_d.add_chart(ch2, "H7")
+
+# Chart 3: Product Count
+ch3 = PieChart(); ch3.title="Product Allocation"
+data_ref3 = Reference(ws_an, min_col=2, min_row=1, max_row=len(cats)+1)
+ch3.add_data(data_ref3, titles_from_data=True); ch3.set_categories(cats_ref)
+ch3.height = 9; ch3.width = 13; ws_d.add_chart(ch3, "O7")
+
+# Chart 4: Sell Through Trend (Line chart)
+ch4 = LineChart(); ch4.title="Sell-Through Rate"
+data_ref4 = Reference(ws_an, min_col=9, min_row=1, max_row=len(cats)+1)
+ch4.add_data(data_ref4, titles_from_data=True); ch4.set_categories(cats_ref)
+ch4.height = 9; ch4.width = 13; ws_d.add_chart(ch4, "V7")
+
+# --- Row 2 (Charts 5-8 from Pivot Analysis Sheet) ---
+# Chart 5: Opening Stock Trend by Selective Categories
+ch5 = BarChart(); ch5.type="col"; ch5.title="Pivot: Opening Stock"
+data_ref5 = Reference(ws_pivot, min_col=2, min_row=1, max_row=len(pivot_rows)+1)
+ch5.add_data(data_ref5, titles_from_data=True); ch5.set_categories(cats_pivot_ref)
+ch5.height = 9; ch5.width = 13; ws_d.add_chart(ch5, "A22")
+
+# Chart 6: Units Sold Grouped
+ch6 = BarChart(); ch6.type="bar"; ch6.title="Pivot: Units Sold"
+data_ref6 = Reference(ws_pivot, min_col=3, min_row=1, max_row=len(pivot_rows)+1)
+ch6.add_data(data_ref6, titles_from_data=True); ch6.set_categories(cats_pivot_ref)
+ch6.height = 9; ch6.width = 13; ws_d.add_chart(ch6, "H22")
+
+# Chart 7: In Stock Ratio vs Demand
+ch7 = LineChart(); ch7.title="Pivot: In Stock Ratio"
+data_ref7 = Reference(ws_pivot, min_col=4, min_row=1, max_row=len(pivot_rows)+1)
+ch7.add_data(data_ref7, titles_from_data=True); ch7.set_categories(cats_pivot_ref)
+ch7.height = 9; ch7.width = 13; ws_d.add_chart(ch7, "O22")
+
+# Chart 8: Estimated Profit Potential
+ch8 = PieChart(); ch8.title="Pivot: Est Profit Margin"
+data_ref8 = Reference(ws_pivot, min_col=5, min_row=1, max_row=len(pivot_rows)+1)
+ch8.add_data(data_ref8, titles_from_data=True); ch8.set_categories(cats_pivot_ref)
+ch8.height = 9; ch8.width = 13; ws_d.add_chart(ch8, "V22")
+
+# Save & download automatically
+wb.save("Inventory_Dashboard.xlsx")
+print("✅ Rebuilt Inventory_Dashboard.xlsx with 8 interactive dashboard charts, custom Pivot metrics & KPIs.")
+files.download('Inventory_Dashboard.xlsx')
